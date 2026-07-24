@@ -18,6 +18,17 @@ interface PlayerState {
 
   fullPlayer: boolean;
 
+  shuffle: boolean;
+
+  repeat: "off" | "all" | "one";
+
+  history: Song[];
+
+  toggleShuffle(): void;
+  toggleRepeat(): void;
+
+  addToHistory(song: Song): void;
+
   playQueue(songs: Song[], album: Album | null): void;
   playSong(index: number): void;
 
@@ -59,6 +70,39 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
   fullPlayer: false,
 
+  shuffle: false,
+
+  repeat: "off",
+
+  history: [],
+
+  toggleShuffle() {
+    set((state) => ({
+      shuffle: !state.shuffle,
+    }));
+  },
+
+  toggleRepeat() {
+    set((state) => {
+      const modes = ["off", "all", "one"] as const;
+
+      const index = modes.indexOf(state.repeat);
+
+      return {
+        repeat: modes[(index + 1) % modes.length],
+      };
+    });
+  },
+
+  addToHistory(song) {
+    set((state) => ({
+      history: [
+        song,
+        ...state.history.filter((item) => item.id !== song.id),
+      ].slice(0, 50),
+    }));
+  },
+
   playQueue(songs, album) {
     const first = songs[0] ?? null;
 
@@ -99,22 +143,49 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
 
   next() {
-    const { currentIndex, queue } = get();
+    const { currentIndex, queue, shuffle, repeat, current } = get();
 
-    const nextIndex = currentIndex + 1;
+    if (repeat === "one" && current) {
+      set({
+        progress: 0,
+        playing: true,
+      });
 
-    if (nextIndex >= queue.length) {
       return;
     }
 
-    const nextSong = queue[nextIndex];
+    let nextIndex;
+
+    if (shuffle) {
+      nextIndex = Math.floor(Math.random() * queue.length);
+    } else {
+      nextIndex = currentIndex + 1;
+    }
+
+    if (nextIndex >= queue.length) {
+      if (repeat === "all") {
+        nextIndex = 0;
+      } else {
+        set({
+          playing: false,
+        });
+
+        return;
+      }
+    }
+
+    const song = queue[nextIndex];
 
     set({
-      current: nextSong,
+      current: song,
       currentIndex: nextIndex,
       playing: true,
       progress: 0,
-      duration: nextSong.duration ?? 0,
+      duration: song.duration ?? 0,
+      history: [
+        song,
+        ...get().history.filter((item) => item.id !== song.id),
+      ].slice(0, 50),
     });
   },
 

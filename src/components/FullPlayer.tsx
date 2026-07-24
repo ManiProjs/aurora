@@ -1,11 +1,16 @@
+import { useEffect, useState } from "react";
 import { X, Pause, Play, SkipBack, SkipForward, Music2 } from "lucide-react";
 
 import { AnimatePresence, motion } from "framer-motion";
 
 import Slider from "./Slider";
 import Queue from "./Queue";
+import LyricsPanel from "./LyricsPanel";
 
 import { usePlayerStore } from "../stores/player";
+
+import { getLyrics } from "../api/lyrics";
+import type { LyricLine } from "../api/lyrics";
 
 function formatTime(seconds: number) {
   const mins = Math.floor(seconds / 60);
@@ -38,6 +43,22 @@ export default function FullPlayer() {
 
   const seek = usePlayerStore((s) => s.seek);
 
+  const [lyrics, setLyrics] = useState<LyricLine[]>([]);
+
+  useEffect(() => {
+    if (!song) {
+      return;
+    }
+
+    async function loadLyrics() {
+      const result = await getLyrics(song.artist ?? "", song.title, song.album);
+
+      setLyrics(result);
+    }
+
+    loadLyrics();
+  }, [song]);
+
   if (!fullPlayer || !song) {
     return null;
   }
@@ -48,12 +69,15 @@ export default function FullPlayer() {
         initial={{
           opacity: 0,
         }}
+
         animate={{
           opacity: 1,
         }}
+
         exit={{
           opacity: 0,
         }}
+
         className="
           fixed
           inset-0
@@ -65,33 +89,39 @@ export default function FullPlayer() {
           aurora-text
         "
       >
-        {/* Dynamic background */}
+        {/* Animated background */}
 
         {album?.coverArt && (
           <motion.img
             src={album.coverArt}
             alt=""
+
             animate={{
               scale: [1, 1.15, 1],
+
               rotate: [0, 2, -2, 0],
+
               x: [0, 20, -20, 0],
+
               y: [0, -20, 20, 0],
             }}
+
             transition={{
               duration: 18,
               repeat: Infinity,
               ease: "easeInOut",
             }}
+
             className="
-      absolute
-      inset-[-10%]
-      h-[120%]
-      w-[120%]
-      object-cover
-      blur-3xl
-      saturate-150
-      opacity-60
-    "
+              absolute
+              inset-[-10%]
+              h-[120%]
+              w-[120%]
+              object-cover
+              blur-3xl
+              saturate-150
+              opacity-60
+            "
           />
         )}
 
@@ -99,34 +129,35 @@ export default function FullPlayer() {
           animate={{
             backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
           }}
+
           transition={{
             duration: 20,
             repeat: Infinity,
             ease: "linear",
           }}
+
           className="
-    absolute
-    inset-0
-    bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.15),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.1),transparent_45%)]
-    bg-[length:200%_200%]
-    backdrop-blur-3xl
-    dark:bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.08),transparent_45%)]
-  "
+            absolute
+            inset-0
+            bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,.18),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,.12),transparent_45%)]
+            bg-[length:200%_200%]
+            backdrop-blur-3xl
+          "
         />
 
         <div
           className="
-    absolute
-    inset-0
-    bg-white/60
-    dark:bg-zinc-950/75
-  "
+            absolute
+            inset-0
+            bg-zinc-950/75
+          "
         />
 
         {/* Close */}
 
         <button
           onClick={closeFullPlayer}
+
           className="
             aurora-glass
             absolute
@@ -144,19 +175,23 @@ export default function FullPlayer() {
 
         <motion.div
           key={song.id}
+
           initial={{
             opacity: 0,
             y: 30,
           }}
+
           animate={{
             opacity: 1,
             y: 0,
           }}
+
           transition={{
             type: "spring",
             stiffness: 160,
             damping: 20,
           }}
+
           className="
             relative
             flex
@@ -171,8 +206,8 @@ export default function FullPlayer() {
 
           <div
             className="
-              flex
               flex-1
+              flex
               flex-col
               items-center
             "
@@ -187,8 +222,11 @@ export default function FullPlayer() {
               {album?.coverArt ? (
                 <motion.img
                   layoutId="player-artwork"
+
                   src={album.coverArt}
+
                   alt={album.name}
+
                   className="
                     h-72
                     w-72
@@ -206,29 +244,27 @@ export default function FullPlayer() {
                     items-center
                     justify-center
                     rounded-3xl
-                    bg-zinc-200
-                    dark:bg-zinc-800
+                    bg-zinc-800
                   "
                 >
                   <Music2 size={64} />
                 </div>
               )}
 
-              <div
-                className="
-                  max-w-md
-                "
-              >
+              <div>
                 <motion.h1
                   key={song.title}
+
                   initial={{
                     opacity: 0,
                     x: -20,
                   }}
+
                   animate={{
                     opacity: 1,
                     x: 0,
                   }}
+
                   className="
                     text-5xl
                     font-bold
@@ -239,9 +275,9 @@ export default function FullPlayer() {
 
                 <p
                   className="
-                    aurora-text-muted
                     mt-4
                     text-xl
+                    aurora-text-muted
                   "
                 >
                   {song.artist}
@@ -261,7 +297,6 @@ export default function FullPlayer() {
                 max-w-3xl
                 items-center
                 gap-3
-                text-xs
               "
             >
               <span>{formatTime(progress)}</span>
@@ -303,7 +338,9 @@ export default function FullPlayer() {
                 whileTap={{
                   scale: 0.9,
                 }}
+
                 onClick={playing ? pause : resume}
+
                 className="
                   flex
                   h-20
@@ -311,11 +348,9 @@ export default function FullPlayer() {
                   items-center
                   justify-center
                   rounded-full
-                  bg-zinc-900
-                  text-white
+                  bg-white
+                  text-black
                   shadow-xl
-                  dark:bg-white
-                  dark:text-black
                 "
               >
                 {playing ? (
@@ -338,7 +373,20 @@ export default function FullPlayer() {
             </div>
           </div>
 
-          <Queue />
+          {/* Lyrics + Queue */}
+
+          <div
+            className="
+              flex
+              w-96
+              flex-col
+              gap-5
+            "
+          >
+            <LyricsPanel lyrics={lyrics} progress={progress} />
+
+            <Queue />
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>

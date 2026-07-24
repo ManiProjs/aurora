@@ -1,24 +1,32 @@
 import { X, GripVertical, Music2 } from "lucide-react";
-
 import { Reorder, motion } from "framer-motion";
 
 import { usePlayerStore } from "../stores/player";
 
 export default function Queue() {
   const queue = usePlayerStore((s) => s.queue);
-
   const current = usePlayerStore((s) => s.current);
-
   const album = usePlayerStore((s) => s.album);
 
   const playSong = usePlayerStore((s) => s.playSong);
-
   const removeFromQueue = usePlayerStore((s) => s.removeFromQueue);
-
   const reorderQueue = usePlayerStore((s) => s.reorderQueue);
 
   return (
-    <aside
+    <motion.aside
+      initial={{
+        opacity: 0,
+        x: 40,
+      }}
+      animate={{
+        opacity: 1,
+        x: 0,
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 150,
+        damping: 20,
+      }}
       className="
         aurora-glass
         flex
@@ -41,7 +49,13 @@ export default function Queue() {
       </h2>
 
       {queue.length === 0 ? (
-        <div
+        <motion.div
+          initial={{
+            opacity: 0,
+          }}
+          animate={{
+            opacity: 1,
+          }}
           className="
             aurora-text-muted
             flex
@@ -55,7 +69,7 @@ export default function Queue() {
         >
           <Music2 size={40} />
           <p>Queue is empty</p>
-        </div>
+        </motion.div>
       ) : (
         <Reorder.Group
           axis="y"
@@ -76,44 +90,79 @@ export default function Queue() {
                 key={song.id}
                 value={song}
                 as="div"
+                initial={{
+                  opacity: 0,
+                  scale: 0.95,
+                }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                }}
                 whileDrag={{
-                  scale: 1.03,
+                  scale: 1.04,
+                  rotate: 1,
+                  zIndex: 20,
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 25,
                 }}
                 className={`
+                  group
                   flex
                   items-center
                   gap-3
                   rounded-2xl
                   p-3
-                  transition
                   cursor-grab
                   active:cursor-grabbing
+                  transition
 
                   ${
                     active
                       ? `
-                        bg-zinc-200
-                        dark:bg-white/15
+                        bg-white/15
+                        shadow-lg
+                        ring-1
+                        ring-white/20
                       `
                       : `
-                        hover:bg-zinc-100
-                        dark:hover:bg-white/10
+                        hover:bg-white/10
                       `
                   }
                 `}
               >
-                <GripVertical
-                  size={18}
-                  className="
-                    aurora-text-muted
-                    shrink-0
-                  "
-                />
+                <motion.div
+                  whileHover={{
+                    scale: 1.15,
+                  }}
+                >
+                  <GripVertical
+                    size={18}
+                    className="
+                      aurora-text-muted
+                    "
+                  />
+                </motion.div>
 
-                {song?.coverArt ? (
-                  <img
+                {album?.coverArt ? (
+                  <motion.img
                     src={album.coverArt}
                     alt=""
+                    animate={
+                      active
+                        ? {
+                            scale: [1, 1.06, 1],
+                          }
+                        : {
+                            scale: 1,
+                          }
+                    }
+                    transition={{
+                      duration: 3,
+                      repeat: active ? Infinity : 0,
+                    }}
                     className="
                       h-10
                       w-10
@@ -130,8 +179,7 @@ export default function Queue() {
                       items-center
                       justify-center
                       rounded-xl
-                      bg-zinc-200
-                      dark:bg-zinc-800
+                      bg-zinc-800
                     "
                   >
                     <Music2 size={18} />
@@ -146,26 +194,27 @@ export default function Queue() {
                     text-left
                   "
                 >
-                  <p
+                  <motion.p
+                    animate={
+                      active
+                        ? {
+                            x: [0, 3, 0],
+                          }
+                        : {}
+                    }
+                    transition={{
+                      duration: 2,
+                      repeat: active ? Infinity : 0,
+                    }}
                     className={`
                       truncate
                       font-medium
 
-                      ${
-                        active
-                          ? `
-                            text-zinc-900
-                            dark:text-white
-                          `
-                          : `
-                            text-zinc-700
-                            dark:text-zinc-300
-                          `
-                      }
+                      ${active ? "text-white" : "text-zinc-300"}
                     `}
                   >
                     {song.title}
-                  </p>
+                  </motion.p>
 
                   <p
                     className="
@@ -179,8 +228,18 @@ export default function Queue() {
                 </button>
 
                 <motion.button
+                  initial={{
+                    opacity: 0,
+                    scale: 0.8,
+                  }}
+                  whileHover={{
+                    scale: 1.15,
+                  }}
                   whileTap={{
                     scale: 0.8,
+                  }}
+                  animate={{
+                    opacity: 1,
                   }}
                   onClick={() => removeFromQueue(song.id)}
                   className="
@@ -188,8 +247,8 @@ export default function Queue() {
                     rounded-full
                     p-2
                     transition
-                    hover:bg-red-500/10
-                    hover:text-red-500
+                    hover:bg-red-500/20
+                    hover:text-red-400
                   "
                 >
                   <X size={16} />
@@ -199,6 +258,6 @@ export default function Queue() {
           })}
         </Reorder.Group>
       )}
-    </aside>
+    </motion.aside>
   );
 }
