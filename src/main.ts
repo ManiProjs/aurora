@@ -2,7 +2,7 @@ import { app, BrowserWindow } from "electron";
 import path from "node:path";
 import started from "electron-squirrel-startup";
 import { ipcMain } from "electron";
-import { saveAuth, loadAuth } from "./services/authStorage";
+import { saveAuth, loadAuth, clearAuth } from "./services/authStorage";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -16,6 +16,8 @@ const createWindow = () => {
     height: 600,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
+      nodeIntegration: false,
+      contextIsolation: true,
     },
   });
 
@@ -54,6 +56,14 @@ app.on("activate", () => {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
 
-ipcMain.handle("auth:save", (_, auth) => saveAuth(auth));
+ipcMain.handle("auth:save", async (_, auth) => {
+  await saveAuth(auth);
+});
 
-ipcMain.handle("auth:load", () => loadAuth());
+ipcMain.handle("auth:load", async () => {
+  return await loadAuth();
+});
+
+ipcMain.handle("auth:clear", async () => {
+  await clearAuth();
+});

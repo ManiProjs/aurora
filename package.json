@@ -47,7 +47,6 @@
     "electron-squirrel-startup": "^1.0.1",
     "fast-average-color": "^9.5.2",
     "framer-motion": "^12.42.2",
-    "keytar": "^7.9.0",
     "lucide-react": "^1.26.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -56,8 +55,7 @@
   "allowScripts": {
     "electron-winstaller@5.4.4": true,
     "esbuild@0.21.5": true,
-    "fsevents@2.3.3": true,
-    "keytar@7.9.0": true
+    "fsevents@2.3.3": true
   },
   "overrides": {
     "yauzl": "^3.3.1"

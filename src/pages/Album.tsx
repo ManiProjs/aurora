@@ -11,7 +11,7 @@ import { useAuthStore } from "../stores/auth";
 import { useNavigationStore } from "../stores/navigation";
 import { usePlayerStore } from "../stores/player";
 
-import { useAlbumColor } from "../hooks/useAlbumColor";
+import { useAlbumColors } from "../hooks/useAlbumColors";
 
 export default function AlbumPage() {
   const album = useNavigationStore((s) => s.selectedAlbum);
@@ -23,6 +23,7 @@ export default function AlbumPage() {
   const playQueue = usePlayerStore((s) => s.playQueue);
 
   const [songs, setSongs] = useState<Song[]>([]);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,7 +50,7 @@ export default function AlbumPage() {
     ? getCoverArtUrl(server, username, password, album.coverArt)
     : null;
 
-  const albumColor = useAlbumColor(artwork);
+  const colors = useAlbumColors(artwork);
 
   if (!album) {
     return null;
@@ -72,42 +73,90 @@ export default function AlbumPage() {
   }
 
   return (
-    <main
+    <motion.main
+      initial={{
+        opacity: 0,
+      }}
+
+      animate={{
+        opacity: 1,
+      }}
+
+      transition={{
+        duration: 0.5,
+      }}
+
       className="
         relative
         min-h-screen
         overflow-hidden
         p-10
+        pb-32
         text-white
       "
     >
       {/* Dynamic background */}
+
       <div
         className="
           pointer-events-none
           absolute
           inset-0
+          overflow-hidden
         "
       >
         <motion.div
           animate={{
-            background: `
+            background: [
+              `
               radial-gradient(
-                circle at top,
-                ${albumColor},
-                transparent 65%
+                circle at 20% 20%,
+                ${colors[0]},
+                transparent 55%
+              ),
+              radial-gradient(
+                circle at 80% 30%,
+                ${colors[1]},
+                transparent 60%
+              ),
+              radial-gradient(
+                circle at 50% 90%,
+                ${colors[2]},
+                transparent 55%
               )
-            `,
+              `,
+
+              `
+              radial-gradient(
+                circle at 80% 20%,
+                ${colors[1]},
+                transparent 55%
+              ),
+              radial-gradient(
+                circle at 20% 80%,
+                ${colors[2]},
+                transparent 60%
+              ),
+              radial-gradient(
+                circle at 50% 30%,
+                ${colors[0]},
+                transparent 55%
+              )
+              `,
+            ],
           }}
+
           transition={{
-            duration: 1,
+            duration: 12,
+            repeat: Infinity,
+            ease: "easeInOut",
           }}
+
           className="
             absolute
-            inset-0
-            opacity-70
+            -inset-40
             blur-3xl
-            scale-125
+            opacity-80
           "
         />
 
@@ -115,22 +164,31 @@ export default function AlbumPage() {
           className="
             absolute
             inset-0
-            bg-zinc-950/80
+            bg-gradient-to-b
+            from-black/20
+            via-zinc-950/70
+            to-zinc-950
           "
         />
       </div>
 
-      <div className="relative z-10">
+      <div
+        className="
+          relative
+          z-10
+          mx-auto
+          max-w-6xl
+        "
+      >
+        {/* Back button */}
+
         <motion.button
           onClick={goBack}
-          initial={{
-            opacity: 0,
-            x: -20,
+
+          whileHover={{
+            x: -5,
           }}
-          animate={{
-            opacity: 1,
-            x: 0,
-          }}
+
           className="
             mb-8
             flex
@@ -140,7 +198,6 @@ export default function AlbumPage() {
             px-4
             py-2
             text-zinc-400
-            transition
             hover:bg-white/10
             hover:text-white
           "
@@ -149,39 +206,44 @@ export default function AlbumPage() {
           Back
         </motion.button>
 
-        <motion.section
-          initial={{
-            opacity: 0,
-            y: 30,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            duration: 0.5,
-          }}
+        {/* Hero */}
+
+        <section
           className="
             flex
-            items-end
+            flex-col
             gap-8
+            md:flex-row
+            md:items-end
           "
         >
           {artwork && (
             <motion.img
               src={artwork}
+
               alt={album.name}
+
               initial={{
                 opacity: 0,
                 scale: 0.8,
+                y: 30,
               }}
+
               animate={{
                 opacity: 1,
                 scale: 1,
+                y: 0,
               }}
+
               transition={{
-                duration: 0.5,
+                type: "spring",
+                stiffness: 180,
               }}
+
+              whileHover={{
+                scale: 1.04,
+              }}
+
               className="
                 h-64
                 w-64
@@ -192,13 +254,28 @@ export default function AlbumPage() {
             />
           )}
 
-          <div>
+          <motion.div
+            initial={{
+              opacity: 0,
+              x: -30,
+            }}
+
+            animate={{
+              opacity: 1,
+              x: 0,
+            }}
+
+            transition={{
+              delay: 0.2,
+            }}
+          >
             <p className="text-zinc-400">Album</p>
 
             <h1
               className="
+                mt-2
                 text-5xl
-                font-bold
+                font-black
               "
             >
               {album.name}
@@ -208,42 +285,59 @@ export default function AlbumPage() {
               className="
                 mt-3
                 text-xl
-                text-zinc-400
+                text-zinc-300
               "
             >
               {album.artist}
             </p>
 
+            <p
+              className="
+                mt-2
+                text-sm
+                text-zinc-500
+              "
+            >
+              {songs.length} songs
+              {" • "}
+              {album.year ?? "Unknown"}
+            </p>
+
             <motion.button
               onClick={playAlbum}
+
               whileHover={{
                 scale: 1.08,
               }}
+
               whileTap={{
                 scale: 0.95,
               }}
+
               className="
                 mt-6
                 flex
                 items-center
-                gap-2
+                gap-3
                 rounded-full
                 bg-white
-                px-7
+                px-8
                 py-3
-                font-semibold
+                font-bold
                 text-black
               "
             >
               <Play size={20} fill="currentColor" />
-              Play
+              Play album
             </motion.button>
-          </div>
-        </motion.section>
+          </motion.div>
+        </section>
+
+        {/* Tracks */}
 
         <section
           className="
-            mt-12
+            mt-14
             space-y-2
           "
         >
@@ -253,30 +347,36 @@ export default function AlbumPage() {
             songs.map((song, index) => (
               <motion.button
                 key={song.id}
+
                 onClick={() => playSong(index)}
+
                 initial={{
                   opacity: 0,
-                  x: -20,
+                  y: 20,
                 }}
+
                 animate={{
                   opacity: 1,
-                  x: 0,
+                  y: 0,
                 }}
+
                 transition={{
-                  delay: index * 0.04,
+                  delay: index * 0.03,
                 }}
+
                 whileHover={{
-                  x: 8,
+                  x: 10,
+                  backgroundColor: "rgba(255,255,255,0.08)",
                 }}
+
                 className="
                     flex
                     w-full
                     items-center
                     gap-5
-                    rounded-xl
+                    rounded-2xl
                     p-4
                     text-left
-                    hover:bg-white/10
                   "
               >
                 <span
@@ -285,7 +385,7 @@ export default function AlbumPage() {
                       text-zinc-500
                     "
                 >
-                  {index + 1}
+                  {String(index + 1).padStart(2, "0")}
                 </span>
 
                 <div>
@@ -305,6 +405,6 @@ export default function AlbumPage() {
           )}
         </section>
       </div>
-    </main>
+    </motion.main>
   );
 }

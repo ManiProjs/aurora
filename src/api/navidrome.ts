@@ -12,6 +12,18 @@ interface SubsonicResponse<T> {
   [key: string]: unknown;
 }
 
+interface SearchResult3Response {
+  searchResult3: {
+    song?: Song[];
+    album?: Album[];
+    artist?: {
+      id: string;
+      name: string;
+      albumCount?: number;
+    }[];
+  };
+}
+
 export class NavidromeClient {
   constructor(
     private baseUrl: string,
@@ -78,5 +90,18 @@ export class NavidromeClient {
 
   getCoverArtUrl(id: string): string {
     return `${this.baseUrl}/rest/getCoverArt?id=${id}&u=${this.username}&p=${this.password}`;
+  }
+
+  async search(query: string) {
+    const response = await this.request<{
+      searchResult3: SearchResult3Response["searchResult3"];
+    }>("search3", {
+      query,
+      songCount: "10",
+      albumCount: "10",
+      artistCount: "10",
+    });
+
+    return response.searchResult3;
   }
 }

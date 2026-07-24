@@ -19,6 +19,8 @@ import AlbumPage from "./pages/Album";
 import { useNavigationStore } from "./stores/navigation";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { useSearchStore } from "./stores/search";
+import SearchOverlay from "./components/SearchOverlay";
 
 export default function App() {
   const login = useAuthStore((state) => state.login);
@@ -56,7 +58,7 @@ export default function App() {
   useEffect(() => {
     async function restoreSession() {
       try {
-        const auth = await window.aurora.loadAuth();
+        const auth = await window.auth.loadAuth();
 
         if (auth) {
           login(auth.server, auth.username, auth.password);
@@ -68,6 +70,22 @@ export default function App() {
 
     restoreSession();
   }, [login]);
+
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+
+        useSearchStore.getState().setOpen(true);
+      }
+    }
+
+    window.addEventListener("keydown", handleKey);
+
+    return () => {
+      window.removeEventListener("keydown", handleKey);
+    };
+  }, []);
 
   if (checkingAuth) {
     return (
@@ -101,6 +119,8 @@ export default function App() {
       "
     >
       <Sidebar />
+
+      <SearchOverlay />
 
       <main
         className="

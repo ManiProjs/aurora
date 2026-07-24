@@ -17,7 +17,7 @@ export default function Login() {
 
       await client.ping();
 
-      await window.aurora.saveAuth({
+      await window.auth.saveAuth({
         server,
         username,
         password,

@@ -17,4 +17,4 @@ const auroraApi: AuroraBridge = {
   loadAuth: () => ipcRenderer.invoke("auth:load"),
 };
 
-contextBridge.exposeInMainWorld("aurora", auroraApi);
+contextBridge.exposeInMainWorld("auth", auroraApi);
