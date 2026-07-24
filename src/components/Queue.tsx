@@ -1,11 +1,15 @@
-import { X, GripVertical } from "lucide-react";
-import { Reorder } from "framer-motion";
+import { X, GripVertical, Music2 } from "lucide-react";
+
+import { Reorder, motion } from "framer-motion";
 
 import { usePlayerStore } from "../stores/player";
 
 export default function Queue() {
   const queue = usePlayerStore((s) => s.queue);
+
   const current = usePlayerStore((s) => s.current);
+
+  const album = usePlayerStore((s) => s.album);
 
   const playSong = usePlayerStore((s) => s.playSong);
 
@@ -16,18 +20,19 @@ export default function Queue() {
   return (
     <aside
       className="
+        aurora-glass
+        flex
         w-96
         max-h-[70vh]
-        overflow-hidden
-        rounded-2xl
-        bg-zinc-900/80
-        p-4
-        backdrop-blur-xl
+        flex-col
+        rounded-3xl
+        p-5
       "
     >
       <h2
         className="
-          mb-4
+          aurora-text
+          mb-5
           text-xl
           font-bold
         "
@@ -35,80 +40,165 @@ export default function Queue() {
         Up Next
       </h2>
 
-      <Reorder.Group
-        axis="y"
-        values={queue}
-        onReorder={reorderQueue}
-        className="
-          space-y-2
-          overflow-y-auto
-          pr-2
-        "
-      >
-        {queue.map((song, index) => (
-          <Reorder.Item
-            key={song.id}
-            value={song}
-            className="
-              flex
-              items-center
-              gap-3
-              rounded-xl
-              bg-white/5
-              p-3
-              cursor-grab
-              active:cursor-grabbing
-            "
-          >
-            <GripVertical
-              size={18}
-              className="
-                text-zinc-500
-              "
-            />
+      {queue.length === 0 ? (
+        <div
+          className="
+            aurora-text-muted
+            flex
+            flex-1
+            flex-col
+            items-center
+            justify-center
+            gap-3
+            py-12
+          "
+        >
+          <Music2 size={40} />
+          <p>Queue is empty</p>
+        </div>
+      ) : (
+        <Reorder.Group
+          axis="y"
+          values={queue}
+          onReorder={reorderQueue}
+          className="
+            aurora-scrollbar
+            space-y-2
+            overflow-y-auto
+            pr-2
+          "
+        >
+          {queue.map((song, index) => {
+            const active = current?.id === song.id;
 
-            <button
-              onClick={() => playSong(index)}
-              className="
-                min-w-0
-                flex-1
-                text-left
-              "
-            >
-              <p
+            return (
+              <Reorder.Item
+                key={song.id}
+                value={song}
+                as="div"
+                whileDrag={{
+                  scale: 1.03,
+                }}
                 className={`
-                  truncate
-                  font-medium
-                  ${current?.id === song.id ? "text-white" : "text-zinc-300"}
+                  flex
+                  items-center
+                  gap-3
+                  rounded-2xl
+                  p-3
+                  transition
+                  cursor-grab
+                  active:cursor-grabbing
+
+                  ${
+                    active
+                      ? `
+                        bg-zinc-200
+                        dark:bg-white/15
+                      `
+                      : `
+                        hover:bg-zinc-100
+                        dark:hover:bg-white/10
+                      `
+                  }
                 `}
               >
-                {song.title}
-              </p>
+                <GripVertical
+                  size={18}
+                  className="
+                    aurora-text-muted
+                    shrink-0
+                  "
+                />
 
-              <p
-                className="
-                  truncate
-                  text-sm
-                  text-zinc-500
-                "
-              >
-                {song.artist}
-              </p>
-            </button>
+                {song?.coverArt ? (
+                  <img
+                    src={album.coverArt}
+                    alt=""
+                    className="
+                      h-10
+                      w-10
+                      rounded-xl
+                      object-cover
+                    "
+                  />
+                ) : (
+                  <div
+                    className="
+                      flex
+                      h-10
+                      w-10
+                      items-center
+                      justify-center
+                      rounded-xl
+                      bg-zinc-200
+                      dark:bg-zinc-800
+                    "
+                  >
+                    <Music2 size={18} />
+                  </div>
+                )}
 
-            <button
-              onClick={() => removeFromQueue(song.id)}
-              className="
-                text-zinc-500
-                transition
-                hover:text-white
-              "
-            >
-              <X size={16} />
-            </button>
-          </Reorder.Item>
-        ))}
-      </Reorder.Group>
+                <button
+                  onClick={() => playSong(index)}
+                  className="
+                    min-w-0
+                    flex-1
+                    text-left
+                  "
+                >
+                  <p
+                    className={`
+                      truncate
+                      font-medium
+
+                      ${
+                        active
+                          ? `
+                            text-zinc-900
+                            dark:text-white
+                          `
+                          : `
+                            text-zinc-700
+                            dark:text-zinc-300
+                          `
+                      }
+                    `}
+                  >
+                    {song.title}
+                  </p>
+
+                  <p
+                    className="
+                      aurora-text-muted
+                      truncate
+                      text-sm
+                    "
+                  >
+                    {song.artist}
+                  </p>
+                </button>
+
+                <motion.button
+                  whileTap={{
+                    scale: 0.8,
+                  }}
+                  onClick={() => removeFromQueue(song.id)}
+                  className="
+                    aurora-text-muted
+                    rounded-full
+                    p-2
+                    transition
+                    hover:bg-red-500/10
+                    hover:text-red-500
+                  "
+                >
+                  <X size={16} />
+                </motion.button>
+              </Reorder.Item>
+            );
+          })}
+        </Reorder.Group>
+      )}
     </aside>
   );
 }
