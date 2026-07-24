@@ -3,7 +3,6 @@ import path from "node:path";
 import started from "electron-squirrel-startup";
 import { ipcMain } from "electron";
 import { saveAuth, loadAuth, clearAuth } from "./services/authStorage";
-import { getArtistImage } from "./api/lastfm";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -67,8 +66,4 @@ ipcMain.handle("auth:load", async () => {
 
 ipcMain.handle("auth:clear", async () => {
   await clearAuth();
-});
-
-ipcMain.handle("artist:image", async (_, artist: string) => {
-  return await getArtistImage(artist);
 });

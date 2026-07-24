@@ -57,7 +57,7 @@ export class NavidromeClient {
         throw new Error(response.error?.message ?? "Unknown Navidrome error");
       }
 
-      return response as T;
+      return response as unknown as T;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Navidrome request failed:", {
@@ -201,5 +201,20 @@ export class NavidromeClient {
     }
 
     return this.getCoverArtUrl(response.artist.coverArt);
+  }
+
+  async getSongs(): Promise<Song[]> {
+    const response = await this.request<{
+      searchResult3: {
+        song?: Song[];
+      };
+    }>("search3", {
+      query: "",
+      songCount: "500",
+      albumCount: "0",
+      artistCount: "0",
+    });
+
+    return response.searchResult3.song ?? [];
   }
 }

@@ -1,7 +1,17 @@
-import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
+import {
+  Pause,
+  Play,
+  SkipBack,
+  SkipForward,
+  Music2,
+  Volume2,
+} from "lucide-react";
+
+import { motion } from "framer-motion";
 import type { MouseEvent, ReactElement } from "react";
 
 import Slider from "./Slider";
+
 import { usePlayerStore } from "../stores/player";
 
 function formatTime(seconds: number) {
@@ -33,53 +43,100 @@ export default function MiniPlayer(): ReactElement | null {
 
   const openFullPlayer = usePlayerStore((s) => s.openFullPlayer);
 
-  if (!song) return null;
+  if (!song) {
+    return null;
+  }
 
   function stopPropagation(e: MouseEvent) {
     e.stopPropagation();
   }
 
   return (
-    <div
-      onClick={openFullPlayer}
+    <motion.div
+      initial={{
+        y: 100,
+      }}
+      animate={{
+        y: 0,
+      }}
       className="
+        aurora-glass
         fixed
-        bottom-0
-        left-0
-        right-0
+        bottom-4
+        left-4
+        right-4
         z-40
         flex
-        cursor-pointer
         items-center
         gap-6
-        border-t
-        border-zinc-800
-        bg-zinc-950/90
+        rounded-3xl
         p-4
-        text-white
-        backdrop-blur-xl
+        shadow-2xl
       "
+      onClick={openFullPlayer}
     >
-      {/* Song info */}
-      <div className="flex w-64 shrink-0 items-center gap-3">
-        {album?.coverArt && (
+      {/* Artwork + info */}
+
+      <div
+        className="
+          flex
+          w-72
+          shrink-0
+          items-center
+          gap-4
+        "
+      >
+        {album?.coverArt ? (
           <img
             src={album.coverArt}
             alt={album.name}
             className="
               h-14
               w-14
-              rounded-lg
+              rounded-2xl
               object-cover
               shadow-lg
             "
           />
+        ) : (
+          <div
+            className="
+              flex
+              h-14
+              w-14
+              items-center
+              justify-center
+              rounded-2xl
+              bg-zinc-200
+              dark:bg-zinc-800
+            "
+          >
+            <Music2 size={24} />
+          </div>
         )}
 
-        <div className="min-w-0">
-          <p className="truncate font-semibold">{song.title}</p>
+        <div
+          className="
+            min-w-0
+          "
+        >
+          <p
+            className="
+              aurora-text
+              truncate
+              font-semibold
+            "
+          >
+            {song.title}
+          </p>
 
-          <p className="truncate text-sm text-zinc-500">
+          <p
+            className="
+              aurora-text-muted
+              truncate
+              text-sm
+            "
+          >
             {song.artist}
             {song.album && ` • ${song.album}`}
           </p>
@@ -87,12 +144,30 @@ export default function MiniPlayer(): ReactElement | null {
       </div>
 
       {/* Controls */}
-      <div onClick={stopPropagation} className="flex items-center gap-3">
-        <button onClick={previous} className="transition hover:scale-110">
+
+      <div
+        onClick={stopPropagation}
+        className="
+          flex
+          items-center
+          gap-4
+        "
+      >
+        <button
+          onClick={previous}
+          className="
+            aurora-button
+            rounded-full
+            p-2
+          "
+        >
           <SkipBack size={20} />
         </button>
 
-        <button
+        <motion.button
+          whileTap={{
+            scale: 0.9,
+          }}
           onClick={playing ? pause : resume}
           className="
             flex
@@ -101,10 +176,11 @@ export default function MiniPlayer(): ReactElement | null {
             items-center
             justify-center
             rounded-full
-            bg-white
-            text-black
-            transition
-            hover:scale-105
+            bg-zinc-900
+            text-white
+            shadow-lg
+            dark:bg-white
+            dark:text-black
           "
         >
           {playing ? (
@@ -112,14 +188,22 @@ export default function MiniPlayer(): ReactElement | null {
           ) : (
             <Play size={22} fill="currentColor" />
           )}
-        </button>
+        </motion.button>
 
-        <button onClick={next} className="transition hover:scale-110">
+        <button
+          onClick={next}
+          className="
+            aurora-button
+            rounded-full
+            p-2
+          "
+        >
           <SkipForward size={20} />
         </button>
       </div>
 
       {/* Progress */}
+
       <div
         onClick={stopPropagation}
         className="
@@ -127,26 +211,44 @@ export default function MiniPlayer(): ReactElement | null {
           flex-1
           items-center
           gap-3
-          text-xs
-          text-zinc-500
         "
       >
-        <span className="w-10 text-right">{formatTime(progress)}</span>
+        <span
+          className="
+            aurora-text-muted
+            w-10
+            text-xs
+          "
+        >
+          {formatTime(progress)}
+        </span>
 
-        <div className="flex-1">
-          <Slider
-            value={progress}
-            min={0}
-            max={duration || 0}
-            onChange={seek}
-          />
-        </div>
+        <Slider value={progress} min={0} max={duration || 1} onChange={seek} />
 
-        <span className="w-10">{formatTime(duration)}</span>
+        <span
+          className="
+            aurora-text-muted
+            w-10
+            text-xs
+          "
+        >
+          {formatTime(duration)}
+        </span>
       </div>
 
       {/* Volume */}
-      <div onClick={stopPropagation} className="w-32 shrink-0">
+
+      <div
+        onClick={stopPropagation}
+        className="
+          flex
+          w-36
+          items-center
+          gap-2
+        "
+      >
+        <Volume2 size={18} />
+
         <Slider
           value={volume}
           min={0}
@@ -155,6 +257,6 @@ export default function MiniPlayer(): ReactElement | null {
           onChange={setVolume}
         />
       </div>
-    </div>
+    </motion.div>
   );
 }

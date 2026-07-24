@@ -1,35 +1,33 @@
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+
 import { useAuthStore } from "./stores/auth";
+import { useNavigationStore } from "./stores/navigation";
+import { useSearchStore } from "./stores/search";
 
 import Login from "./pages/Login";
 import Home from "./pages/Home";
+import Albums from "./pages/Albums";
+import AlbumPage from "./pages/Album";
+import Artists from "./pages/Artists";
+import ArtistPage from "./pages/Artist";
+import Songs from "./pages/Songs";
+import Search from "./pages/Search";
+import Settings from "./pages/Settings";
 
 import Sidebar from "./components/Sidebar";
+import SearchOverlay from "./components/SearchOverlay";
 import AudioEngine from "./components/AudioEngine";
 import MiniPlayer from "./components/MiniPlayer";
 import FullPlayer from "./components/FullPlayer";
 
-import Albums from "./pages/Albums";
-import Artists from "./pages/Artists";
-import Songs from "./pages/Songs";
-import Search from "./pages/Search";
-import Settings from "./pages/Settings";
-import AlbumPage from "./pages/Album";
-import ArtistPage from "./pages/Artist";
-
-import { useNavigationStore } from "./stores/navigation";
-
-import { AnimatePresence, motion } from "framer-motion";
-import { useSearchStore } from "./stores/search";
-import SearchOverlay from "./components/SearchOverlay";
-
 export default function App() {
-  const login = useAuthStore((state) => state.login);
-  const authenticated = useAuthStore((state) => state.authenticated);
-
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const login = useAuthStore((s) => s.login);
+  const authenticated = useAuthStore((s) => s.authenticated);
 
   const page = useNavigationStore((s) => s.page);
+
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   function renderPage() {
     switch (page) {
@@ -95,13 +93,13 @@ export default function App() {
     return (
       <div
         className="
-        flex
-        h-screen
-        items-center
-        justify-center
-        bg-zinc-950
-        text-white
-      "
+          aurora-background
+          aurora-text
+          flex
+          h-screen
+          items-center
+          justify-center
+        "
       >
         Loading...
       </div>
@@ -115,11 +113,11 @@ export default function App() {
   return (
     <div
       className="
+        aurora-background
+        aurora-text
         flex
         h-screen
         overflow-hidden
-        bg-zinc-950
-        text-white
       "
     >
       <Sidebar />
@@ -128,6 +126,7 @@ export default function App() {
 
       <main
         className="
+          aurora-scrollbar
           flex-1
           overflow-y-auto
           pb-24
@@ -138,7 +137,7 @@ export default function App() {
             key={page}
             initial={{
               opacity: 0,
-              y: 15,
+              y: 16,
             }}
             animate={{
               opacity: 1,
@@ -146,10 +145,11 @@ export default function App() {
             }}
             exit={{
               opacity: 0,
-              y: -15,
+              y: -16,
             }}
             transition={{
-              duration: 0.25,
+              duration: 0.22,
+              ease: "easeOut",
             }}
             className="h-full"
           >
