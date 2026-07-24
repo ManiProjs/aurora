@@ -14,8 +14,11 @@ import Artists from "./pages/Artists";
 import Songs from "./pages/Songs";
 import Search from "./pages/Search";
 import Settings from "./pages/Settings";
+import AlbumPage from "./pages/Album";
 
 import { useNavigationStore } from "./stores/navigation";
+
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function App() {
   const login = useAuthStore((state) => state.login);
@@ -29,6 +32,9 @@ export default function App() {
     switch (page) {
       case "albums":
         return <Albums />;
+
+      case "album":
+        return <AlbumPage />;
 
       case "artists":
         return <Artists />;
@@ -103,7 +109,29 @@ export default function App() {
           pb-24
         "
       >
-        {renderPage()}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={page}
+            initial={{
+              opacity: 0,
+              y: 15,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            exit={{
+              opacity: 0,
+              y: -15,
+            }}
+            transition={{
+              duration: 0.25,
+            }}
+            className="h-full"
+          >
+            {renderPage()}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       <AudioEngine />

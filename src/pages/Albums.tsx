@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 import { NavidromeClient } from "../api/navidrome";
 import type { Album } from "../api/types";
@@ -13,21 +14,12 @@ export default function Albums() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadAlbums() {
-      try {
-        const client = new NavidromeClient(server, username, password);
+    const client = new NavidromeClient(server, username, password);
 
-        const data = await client.getAlbums();
-
-        setAlbums(data);
-      } catch (error) {
-        console.error("Failed to load albums:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadAlbums();
+    client
+      .getAlbums()
+      .then(setAlbums)
+      .finally(() => setLoading(false));
   }, [server, username, password]);
 
   return (
@@ -37,75 +29,93 @@ export default function Albums() {
         text-white
       "
     >
-      <h1
-        className="
-          text-5xl
-          font-bold
-        "
+      <motion.div
+        initial={{
+          opacity: 0,
+          y: 20,
+        }}
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
       >
-        Albums
-      </h1>
+        <h1
+          className="
+            text-5xl
+            font-bold
+          "
+        >
+          Albums
+        </h1>
 
-      <p
-        className="
-          mt-2
-          text-zinc-400
-        "
-      >
-        Your entire music collection
-      </p>
+        <p
+          className="
+            mt-2
+            text-zinc-400
+          "
+        >
+          Explore your collection
+        </p>
+      </motion.div>
 
       <section
         className="
           mt-10
+          grid
+          grid-cols-2
+          gap-6
+          sm:grid-cols-3
+          lg:grid-cols-5
+          xl:grid-cols-6
         "
       >
-        {loading ? (
-          <div
-            className="
-              grid
-              grid-cols-2
-              gap-6
-              sm:grid-cols-3
-              lg:grid-cols-5
-            "
-          >
-            {Array.from({
-              length: 15,
+        {loading
+          ? Array.from({
+              length: 18,
             }).map((_, i) => (
-              <div
+              <motion.div
                 key={i}
+                animate={{
+                  opacity: [0.4, 0.8, 0.4],
+                }}
+                transition={{
+                  repeat: Infinity,
+                  duration: 1.5,
+                }}
                 className="
-                  aspect-square
-                  animate-pulse
-                  rounded-3xl
-                  bg-zinc-800
-                "
+                aspect-square
+                rounded-3xl
+                bg-zinc-800
+              "
               />
-            ))}
-          </div>
-        ) : (
-          <div
-            className="
-              grid
-              grid-cols-2
-              gap-6
-              sm:grid-cols-3
-              lg:grid-cols-5
-              xl:grid-cols-6
-            "
-          >
-            {albums.map((album) => (
-              <AlbumCard
+            ))
+          : albums.map((album, index) => (
+              <motion.div
                 key={album.id}
-                album={album}
-                server={server}
-                username={username}
-                password={password}
-              />
+                initial={{
+                  opacity: 0,
+                  scale: 0.9,
+                }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                }}
+                transition={{
+                  delay: index * 0.03,
+                }}
+                whileHover={{
+                  y: -8,
+                  scale: 1.03,
+                }}
+              >
+                <AlbumCard
+                  album={album}
+                  server={server}
+                  username={username}
+                  password={password}
+                />
+              </motion.div>
             ))}
-          </div>
-        )}
       </section>
     </main>
   );

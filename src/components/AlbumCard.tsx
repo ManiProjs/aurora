@@ -4,6 +4,7 @@ import type { Album } from "../api/types";
 import { getCoverArtUrl } from "../api/utils";
 import { NavidromeClient } from "../api/navidrome";
 import { usePlayerStore } from "../stores/player";
+import { useNavigationStore } from "../stores/navigation";
 
 interface Props {
   album: Album;
@@ -21,6 +22,8 @@ export default function AlbumCard({
   const playQueue = usePlayerStore((state) => state.playQueue);
 
   const [loading, setLoading] = useState(false);
+
+  const openAlbum = useNavigationStore((s) => s.openAlbum);
 
   async function handlePlay() {
     try {
@@ -51,7 +54,7 @@ export default function AlbumCard({
   }
 
   return (
-    <article className="group cursor-pointer">
+    <article className="group cursor-pointer" onClick={() => openAlbum(album)}>
       <div
         className="
         relative
