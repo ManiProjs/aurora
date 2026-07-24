@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 
 import { useNavigationStore } from "../stores/navigation";
 import { useAuthStore } from "../stores/auth";
+import { useSearchStore } from "../stores/search";
 
 const items = [
   {
@@ -37,7 +38,9 @@ const items = [
   {
     name: "Search",
     icon: Search,
-    page: "search",
+    action: () => {
+      useSearchStore.getState().setOpen(true);
+    },
   },
   {
     name: "Settings",
@@ -118,56 +121,78 @@ export default function Sidebar() {
         {items.map((item) => {
           const Icon = item.icon;
 
-          const active = page === item.page;
+          const selected = page === item.page;
 
           return (
-            <button
-              key={item.page}
-              onClick={() => setPage(item.page as any)}
+            <motion.button
+              key={item.name}
+              onClick={() => {
+                if (item.action) {
+                  item.action();
+                } else {
+                  setPage(item.page as any);
+                }
+              }}
               className="
-                relative
-                flex
-                w-full
-                items-center
-                gap-4
-                rounded-xl
-                px-4
-                py-3
-                text-left
-                text-zinc-400
-                transition
-                hover:text-white
-              "
+        relative
+        flex
+        w-full
+        items-center
+        gap-3
+        rounded-xl
+        px-4
+        py-3
+        text-left
+        transition
+        text-zinc-400
+        hover:text-white
+      "
             >
-              {active && (
+              {selected && (
                 <motion.div
-                  layoutId="active-sidebar"
+                  layoutId="sidebar-active"
                   className="
-                    absolute
-                    inset-0
-                    rounded-xl
-                    bg-white/10
-                  "
+            absolute
+            inset-0
+            rounded-xl
+            bg-white/10
+          "
                   transition={{
                     type: "spring",
-                    stiffness: 300,
-                    damping: 25,
+                    stiffness: 350,
+                    damping: 30,
                   }}
                 />
               )}
 
-              <Icon size={21} className="relative z-10" />
+              <span className="relative z-10 flex items-center gap-3">
+                <Icon size={20} />
 
-              <span
-                className="
-                  relative
-                  z-10
-                  font-medium
-                "
-              >
-                {item.name}
+                <span>{item.name}</span>
               </span>
-            </button>
+
+              {item.action && (
+                <kbd
+                  className="
+            relative
+            z-10
+            ml-auto
+            rounded-md
+            border
+            border-white/10
+            bg-white/5
+            px-2
+            py-1
+            text-xs
+            text-zinc-500
+          "
+                >
+                  {navigator.platform.toLowerCase().includes("mac")
+                    ? "⌘K"
+                    : "Ctrl K"}
+                </kbd>
+              )}
+            </motion.button>
           );
         })}
       </nav>

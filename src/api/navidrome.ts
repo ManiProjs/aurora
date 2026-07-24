@@ -12,16 +12,14 @@ interface SubsonicResponse<T> {
   [key: string]: unknown;
 }
 
-interface SearchResult3Response {
-  searchResult3: {
-    song?: Song[];
-    album?: Album[];
-    artist?: {
-      id: string;
-      name: string;
-      albumCount?: number;
-    }[];
-  };
+interface SearchResult3 {
+  song?: Song[];
+  album?: Album[];
+  artist?: {
+    id: string;
+    name: string;
+    albumCount?: number;
+  }[];
 }
 
 export class NavidromeClient {
@@ -37,26 +35,43 @@ export class NavidromeClient {
     endpoint: string,
     params: Record<string, string> = {},
   ): Promise<T> {
-    const { data } = await axios.get<{
-      "subsonic-response": SubsonicResponse<T>;
-    }>(`${this.baseUrl}/rest/${endpoint}`, {
-      params: {
-        u: this.username,
-        p: this.password,
-        v: "1.16.1",
-        c: "Aurora",
-        f: "json",
-        ...params,
-      },
-    });
+    const url = `${this.baseUrl}/rest/${endpoint}`;
 
-    const response = data["subsonic-response"];
+    try {
+      const { data } = await axios.get<{
+        "subsonic-response": SubsonicResponse<T>;
+      }>(url, {
+        params: {
+          u: this.username,
+          p: this.password,
+          v: "1.16.1",
+          c: "Aurora",
+          f: "json",
+          ...params,
+        },
+      });
 
-    if (response.status !== "ok") {
-      throw new Error(response.error?.message ?? "Unknown Navidrome error");
+      const response = data["subsonic-response"];
+
+      if (response.status !== "ok") {
+        throw new Error(response.error?.message ?? "Unknown Navidrome error");
+      }
+
+      return response as T;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Navidrome request failed:", {
+          url,
+          params,
+          status: error.response?.status,
+          data: error.response?.data,
+        });
+      } else {
+        console.error(error);
+      }
+
+      throw error;
     }
-
-    return response as T;
   }
 
   async ping() {
@@ -88,13 +103,9 @@ export class NavidromeClient {
     return response.album.song ?? [];
   }
 
-  getCoverArtUrl(id: string): string {
-    return `${this.baseUrl}/rest/getCoverArt?id=${id}&u=${this.username}&p=${this.password}`;
-  }
-
-  async search(query: string) {
+  async search(query: string): Promise<SearchResult3> {
     const response = await this.request<{
-      searchResult3: SearchResult3Response["searchResult3"];
+      searchResult3: SearchResult3;
     }>("search3", {
       query,
       songCount: "10",
@@ -103,5 +114,14 @@ export class NavidromeClient {
     });
 
     return response.searchResult3;
+  }
+
+  getCoverArtUrl(id: string): string {
+    return (
+      `${this.baseUrl}/rest/getCoverArt` +
+      `?id=${id}` +
+      `&u=${this.username}` +
+      `&p=${this.password}`
+    );
   }
 }
