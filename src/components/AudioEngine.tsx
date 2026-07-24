@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 
 import { usePlayerStore } from "../stores/player";
 import { useAuthStore } from "../stores/auth";
+
 import { getStreamUrl } from "../api/stream";
 
 export default function AudioEngine(): null {
@@ -18,6 +19,7 @@ export default function AudioEngine(): null {
   const volume = usePlayerStore((s) => s.volume);
 
   const seekPosition = usePlayerStore((s) => s.seekPosition);
+
   const clearSeek = usePlayerStore((s) => s.clearSeek);
 
   const setProgress = usePlayerStore((s) => s.setProgress);
@@ -31,19 +33,18 @@ export default function AudioEngine(): null {
 
   // Load song
   useEffect(() => {
-    if (!song) {
-      return;
-    }
+    if (!song) return;
 
-    const element = audio.current;
-
+    const element = audio.current!;
     const request = ++playRequest.current;
+
+    element.pause();
 
     element.src = getStreamUrl(server, username, password, song.id);
 
     element.load();
 
-    async function start() {
+    const start = async () => {
       try {
         await element.play();
 
@@ -51,38 +52,39 @@ export default function AudioEngine(): null {
           element.pause();
         }
       } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") {
-          return;
+        if ((error as DOMException).name !== "AbortError") {
+          console.error(error);
         }
-
-        console.error("Failed to start playback:", error);
       }
-    }
+    };
 
-    start();
+    element.addEventListener("canplay", start, {
+      once: true,
+    });
+
+    return () => {
+      element.removeEventListener("canplay", start);
+    };
   }, [song, server, username, password]);
 
   // Play / pause
   useEffect(() => {
-    const element = audio.current;
-
-    if (!element.src) {
-      return;
-    }
+    const element = audio.current!;
 
     async function toggle() {
-      try {
-        if (playing) {
-          await element.play();
-        } else {
-          element.pause();
-        }
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") {
-          return;
-        }
+      if (!playing) {
+        element.pause();
+        return;
+      }
 
-        console.error("Playback error:", error);
+      if (element.readyState >= 3) {
+        try {
+          await element.play();
+        } catch (error) {
+          if ((error as DOMException).name !== "AbortError") {
+            console.error(error);
+          }
+        }
       }
     }
 
@@ -91,7 +93,7 @@ export default function AudioEngine(): null {
 
   // Volume
   useEffect(() => {
-    audio.current.volume = volume;
+    audio.current!.volume = volume;
   }, [volume]);
 
   // Seek
@@ -100,49 +102,43 @@ export default function AudioEngine(): null {
       return;
     }
 
-    audio.current.currentTime = seekPosition;
+    const element = audio.current!;
+
+    if (!Number.isNaN(element.duration)) {
+      element.currentTime = seekPosition;
+    }
 
     clearSeek();
   }, [seekPosition, clearSeek]);
 
-  // Cleanup
-  useEffect(() => {
-    const element = audio.current;
-
-    return () => {
-      element.pause();
-      element.src = "";
-    };
-  }, []);
-
   // Events
   useEffect(() => {
-    const element = audio.current;
+    const element = audio.current!;
 
-    const updateTime = () => {
+    const time = () => {
       setProgress(element.currentTime);
     };
 
-    const updateDuration = () => {
-      setDuration(Number.isFinite(element.duration) ? element.duration : 0);
+    const duration = () => {
+      setDuration(element.duration);
     };
 
-    const handleEnded = () => {
+    const ended = () => {
       next();
     };
 
-    element.addEventListener("timeupdate", updateTime);
+    element.addEventListener("timeupdate", time);
 
-    element.addEventListener("loadedmetadata", updateDuration);
+    element.addEventListener("loadedmetadata", duration);
 
-    element.addEventListener("ended", handleEnded);
+    element.addEventListener("ended", ended);
 
     return () => {
-      element.removeEventListener("timeupdate", updateTime);
+      element.removeEventListener("timeupdate", time);
 
-      element.removeEventListener("loadedmetadata", updateDuration);
+      element.removeEventListener("loadedmetadata", duration);
 
-      element.removeEventListener("ended", handleEnded);
+      element.removeEventListener("ended", ended);
     };
   }, [setProgress, setDuration, next]);
 

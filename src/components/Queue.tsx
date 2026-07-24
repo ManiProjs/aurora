@@ -5,33 +5,24 @@ import { usePlayerStore } from "../stores/player";
 
 export default function Queue() {
   const queue = usePlayerStore((s) => s.queue);
+
   const current = usePlayerStore((s) => s.current);
+
   const album = usePlayerStore((s) => s.album);
 
   const playSong = usePlayerStore((s) => s.playSong);
+
   const removeFromQueue = usePlayerStore((s) => s.removeFromQueue);
+
   const reorderQueue = usePlayerStore((s) => s.reorderQueue);
 
   return (
-    <motion.aside
-      initial={{
-        opacity: 0,
-        x: 40,
-      }}
-      animate={{
-        opacity: 1,
-        x: 0,
-      }}
-      transition={{
-        type: "spring",
-        stiffness: 150,
-        damping: 20,
-      }}
+    <aside
       className="
         aurora-glass
         flex
+        h-[230px]
         w-96
-        max-h-[70vh]
         flex-col
         rounded-3xl
         p-5
@@ -40,7 +31,7 @@ export default function Queue() {
       <h2
         className="
           aurora-text
-          mb-5
+          mb-4
           text-xl
           font-bold
         "
@@ -49,13 +40,7 @@ export default function Queue() {
       </h2>
 
       {queue.length === 0 ? (
-        <motion.div
-          initial={{
-            opacity: 0,
-          }}
-          animate={{
-            opacity: 1,
-          }}
+        <div
           className="
             aurora-text-muted
             flex
@@ -64,12 +49,11 @@ export default function Queue() {
             items-center
             justify-center
             gap-3
-            py-12
           "
         >
-          <Music2 size={40} />
+          <Music2 size={36} />
           <p>Queue is empty</p>
-        </motion.div>
+        </div>
       ) : (
         <Reorder.Group
           axis="y"
@@ -77,9 +61,11 @@ export default function Queue() {
           onReorder={reorderQueue}
           className="
             aurora-scrollbar
+            flex-1
             space-y-2
             overflow-y-auto
             pr-2
+            scroll-smooth
           "
         >
           {queue.map((song, index) => {
@@ -90,40 +76,23 @@ export default function Queue() {
                 key={song.id}
                 value={song}
                 as="div"
-                initial={{
-                  opacity: 0,
-                  scale: 0.95,
-                }}
-                animate={{
-                  opacity: 1,
-                  scale: 1,
-                }}
                 whileDrag={{
-                  scale: 1.04,
-                  rotate: 1,
-                  zIndex: 20,
-                }}
-                transition={{
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 25,
+                  scale: 1.03,
                 }}
                 className={`
-                  group
                   flex
                   items-center
                   gap-3
                   rounded-2xl
                   p-3
                   cursor-grab
-                  active:cursor-grabbing
                   transition
+                  active:cursor-grabbing
 
                   ${
                     active
                       ? `
-                        bg-white/15
-                        shadow-lg
+                        bg-white/20
                         ring-1
                         ring-white/20
                       `
@@ -133,39 +102,22 @@ export default function Queue() {
                   }
                 `}
               >
-                <motion.div
-                  whileHover={{
-                    scale: 1.15,
-                  }}
-                >
-                  <GripVertical
-                    size={18}
-                    className="
-                      aurora-text-muted
-                    "
-                  />
-                </motion.div>
+                <GripVertical
+                  size={18}
+                  className="
+                    aurora-text-muted
+                    shrink-0
+                  "
+                />
 
-                {album?.coverArt ? (
-                  <motion.img
-                    src={album.coverArt}
+                {song.coverArt || album?.coverArt ? (
+                  <img
+                    src={album?.coverArt}
                     alt=""
-                    animate={
-                      active
-                        ? {
-                            scale: [1, 1.06, 1],
-                          }
-                        : {
-                            scale: 1,
-                          }
-                    }
-                    transition={{
-                      duration: 3,
-                      repeat: active ? Infinity : 0,
-                    }}
                     className="
                       h-10
                       w-10
+                      shrink-0
                       rounded-xl
                       object-cover
                     "
@@ -176,10 +128,11 @@ export default function Queue() {
                       flex
                       h-10
                       w-10
+                      shrink-0
                       items-center
                       justify-center
                       rounded-xl
-                      bg-zinc-800
+                      bg-white/10
                     "
                   >
                     <Music2 size={18} />
@@ -194,27 +147,15 @@ export default function Queue() {
                     text-left
                   "
                 >
-                  <motion.p
-                    animate={
-                      active
-                        ? {
-                            x: [0, 3, 0],
-                          }
-                        : {}
-                    }
-                    transition={{
-                      duration: 2,
-                      repeat: active ? Infinity : 0,
-                    }}
+                  <p
                     className={`
                       truncate
                       font-medium
-
                       ${active ? "text-white" : "text-zinc-300"}
                     `}
                   >
                     {song.title}
-                  </motion.p>
+                  </p>
 
                   <p
                     className="
@@ -228,18 +169,8 @@ export default function Queue() {
                 </button>
 
                 <motion.button
-                  initial={{
-                    opacity: 0,
-                    scale: 0.8,
-                  }}
-                  whileHover={{
-                    scale: 1.15,
-                  }}
                   whileTap={{
                     scale: 0.8,
-                  }}
-                  animate={{
-                    opacity: 1,
                   }}
                   onClick={() => removeFromQueue(song.id)}
                   className="
@@ -247,8 +178,8 @@ export default function Queue() {
                     rounded-full
                     p-2
                     transition
-                    hover:bg-red-500/20
-                    hover:text-red-400
+                    hover:bg-red-500/10
+                    hover:text-red-500
                   "
                 >
                   <X size={16} />
@@ -258,6 +189,6 @@ export default function Queue() {
           })}
         </Reorder.Group>
       )}
-    </motion.aside>
+    </aside>
   );
 }

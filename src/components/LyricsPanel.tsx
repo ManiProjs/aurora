@@ -1,7 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 import type { LyricLine } from "../api/lyrics";
+
+import { usePlayerStore } from "../stores/player";
 
 interface Props {
   lyrics: LyricLine[];
@@ -9,114 +11,135 @@ interface Props {
 }
 
 export default function LyricsPanel({ lyrics, progress }: Props) {
+  const seek = usePlayerStore((s) => s.seek);
+
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const lineRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const lineRefs = useRef<Record<number, HTMLButtonElement | null>>({});
 
-  const currentIndex = lyrics.findIndex(
-    (line, index) =>
-      progress >= line.time && progress < (lyrics[index + 1]?.time ?? Infinity),
-  );
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  useEffect(() => {
-    if (
-      currentIndex < 0 ||
-      !containerRef.current ||
-      !lineRefs.current[currentIndex]
-    ) {
+  const manualSeek = useRef(false);
+
+  function findCurrentLine(time: number) {
+    let index = 0;
+
+    for (let i = 0; i < lyrics.length; i++) {
+      if (lyrics[i].time <= time) {
+        index = i;
+      } else {
+        break;
+      }
+    }
+
+    return index;
+  }
+
+  function scrollToLine(index: number) {
+    const element = lineRefs.current[index];
+
+    if (!element || !containerRef.current) {
       return;
     }
 
-    const container = containerRef.current;
-    const line = lineRefs.current[currentIndex];
-
-    const offset =
-      line.offsetTop - container.clientHeight / 2 + line.clientHeight / 2;
-
-    container.scrollTo({
-      top: offset,
+    element.scrollIntoView({
       behavior: "smooth",
+      block: "center",
     });
-  }, [currentIndex]);
+  }
+
+  useEffect(() => {
+    if (!lyrics.length) {
+      return;
+    }
+
+    const index = findCurrentLine(progress);
+
+    setActiveIndex(index);
+
+    if (!manualSeek.current) {
+      scrollToLine(index);
+    }
+
+    manualSeek.current = false;
+  }, [progress, lyrics]);
+
+  function handleClick(line: LyricLine, index: number) {
+    manualSeek.current = true;
+
+    setActiveIndex(index);
+
+    seek(line.time);
+
+    requestAnimationFrame(() => {
+      scrollToLine(index);
+    });
+  }
+
+  if (!lyrics.length) {
+    return (
+      <div
+        className="
+          aurora-glass
+          flex
+          h-80
+          items-center
+          justify-center
+          rounded-3xl
+          text-zinc-400
+        "
+      >
+        No lyrics found
+      </div>
+    );
+  }
 
   return (
     <div
+      ref={containerRef}
       className="
         aurora-glass
-        flex
         h-96
-        flex-col
+        overflow-y-auto
         rounded-3xl
         p-6
+        scroll-smooth
       "
     >
-      <h2
-        className="
-          mb-4
-          text-lg
-          font-bold
-        "
-      >
-        Lyrics
-      </h2>
-
       <div
-        ref={containerRef}
         className="
-          flex-1
-          overflow-y-auto
-          pr-2
-          aurora-scrollbar
+          flex
+          flex-col
+          items-center
+          gap-5
         "
       >
-        {lyrics.length === 0 ? (
-          <div
+        {lyrics.map((line, index) => (
+          <motion.button
+            key={`${line.time}-${index}`}
+            ref={(el) => {
+              lineRefs.current[index] = el;
+            }}
+            onClick={() => handleClick(line, index)}
+            animate={{
+              scale: activeIndex === index ? 1.08 : 1,
+              opacity: activeIndex === index ? 1 : 0.45,
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 180,
+              damping: 20,
+            }}
             className="
-              flex
-              h-full
-              items-center
-              justify-center
-              aurora-text-muted
-            "
-          >
-            No lyrics available
-          </div>
-        ) : (
-          <div
-            className="
-              space-y-6
-              py-32
               text-center
+              text-lg
+              font-medium
+              transition
             "
           >
-            {lyrics.map((line, index) => (
-              <div
-                key={index}
-                ref={(element) => {
-                  lineRefs.current[index] = element;
-                }}
-              >
-                <motion.p
-                  animate={{
-                    opacity: index === currentIndex ? 1 : 0.35,
-
-                    scale: index === currentIndex ? 1.12 : 1,
-                  }}
-                  transition={{
-                    duration: 0.3,
-                  }}
-                  className="
-                    cursor-default
-                    text-base
-                    font-medium
-                  "
-                >
-                  {line.text}
-                </motion.p>
-              </div>
-            ))}
-          </div>
-        )}
+            {line.text}
+          </motion.button>
+        ))}
       </div>
     </div>
   );
