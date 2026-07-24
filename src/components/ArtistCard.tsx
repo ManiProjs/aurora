@@ -1,11 +1,10 @@
 import { motion } from "framer-motion";
-import { Mic2, User } from "lucide-react";
+import { User } from "lucide-react";
+import { useState } from "react";
 
 import type { Artist } from "../api/types";
 
 import { useNavigationStore } from "../stores/navigation";
-
-import { useState } from "react";
 
 interface Props {
   artist: Artist;
@@ -19,97 +18,129 @@ export default function ArtistCard({ artist }: Props) {
   return (
     <motion.button
       onClick={() => openArtist(artist)}
+
       initial={{
         opacity: 0,
         y: 20,
-        scale: 0.95,
       }}
+
       animate={{
         opacity: 1,
         y: 0,
-        scale: 1,
       }}
+
       whileHover={{
         y: -8,
-        scale: 1.03,
       }}
+
       whileTap={{
-        scale: 0.97,
+        scale: 0.96,
       }}
+
       transition={{
         type: "spring",
-        stiffness: 250,
+        stiffness: 260,
         damping: 20,
       }}
+
       className="
+        aurora-card
         group
-        rounded-3xl
-        border
-        border-white/10
-        bg-zinc-900
-        p-6
+        overflow-hidden
         text-left
-        transition
-        hover:bg-zinc-800
       "
     >
+      {/* Image */}
+
       <div
         className="
-    aspect-square
-    overflow-hidden
-    rounded-2xl
-    bg-zinc-800
-  "
+          relative
+          aspect-square
+          overflow-hidden
+        "
       >
         {artist.artistImageUrl && !imageError ? (
-          <img
+          <motion.img
             src={artist.artistImageUrl}
             alt={artist.name}
+
             loading="lazy"
+
             onError={() => setImageError(true)}
+
+            whileHover={{
+              scale: 1.08,
+            }}
+
+            transition={{
+              duration: 0.4,
+            }}
+
             className="
-        h-full
-        w-full
-        object-cover
-      "
+              h-full
+              w-full
+              object-cover
+            "
           />
         ) : (
           <div
             className="
-        flex
-        h-full
-        w-full
-        items-center
-        justify-center
-        text-zinc-500
-      "
+              flex
+              h-full
+              items-center
+              justify-center
+              bg-zinc-100
+              text-zinc-400
+              dark:bg-zinc-800
+            "
           >
-            <User size={56} strokeWidth={1.5} />
+            <User size={56} strokeWidth={1.3} />
           </div>
         )}
+
+        {/* Gradient */}
+
+        <div
+          className="
+            absolute
+            inset-x-0
+            bottom-0
+            h-24
+            bg-gradient-to-t
+            from-black/60
+            to-transparent
+          "
+        />
       </div>
 
-      <h2
-        className="
-          mt-5
-          truncate
-          text-lg
-          font-semibold
-          text-white
-        "
-      >
-        {artist.name}
-      </h2>
+      {/* Info */}
 
-      <p
+      <div
         className="
-          mt-1
-          text-sm
-          text-zinc-400
+          p-4
         "
       >
-        {artist.albumCount ?? 0} albums
-      </p>
+        <h2
+          className="
+            aurora-text
+            truncate
+            text-lg
+            font-semibold
+          "
+        >
+          {artist.name}
+        </h2>
+
+        <p
+          className="
+            aurora-text-muted
+            mt-1
+            text-sm
+          "
+        >
+          {artist.albumCount ?? 0} albums
+        </p>
+      </div>
     </motion.button>
   );
 }
