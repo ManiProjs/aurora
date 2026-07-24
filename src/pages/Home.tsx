@@ -22,6 +22,28 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [heroPaused, setHeroPaused] = useState(false);
 
+  const [greeting, setGreeting] = useState("");
+
+  useEffect(() => {
+    const updateGreeting = () => {
+      const hour = new Date().getHours();
+
+      if (hour < 12) {
+        setGreeting("Good morning");
+      } else if (hour < 18) {
+        setGreeting("Good afternoon");
+      } else {
+        setGreeting("Good evening");
+      }
+    };
+
+    updateGreeting();
+
+    const timer = setInterval(updateGreeting, 60000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   function changeFeatured(direction: "next" | "previous") {
     if (albums.length === 0 || !featured) return;
 
@@ -104,7 +126,7 @@ export default function Home() {
     >
       <div className="mx-auto max-w-7xl">
         <header>
-          <h1 className="text-4xl font-bold md:text-5xl">Good evening</h1>
+          <h1 className="text-4xl font-bold md:text-5xl">{greeting}</h1>
 
           <p className="mt-2 text-zinc-400">Your personal music space</p>
         </header>
@@ -159,7 +181,7 @@ export default function Home() {
                   }}
                   animate={{
                     scale: 1.05,
-                    opacity: 0.55,
+                    opacity: 0.7,
                   }}
                   transition={{
                     duration: 1.2,
@@ -171,7 +193,7 @@ export default function Home() {
             w-full
             object-cover
             blur-3xl
-            saturate-150
+            saturate-200
           "
                 />
               )}
@@ -347,6 +369,30 @@ export default function Home() {
         </AnimatePresence>
 
         <section className="mt-12">
+          <h2 className="mb-5 text-2xl font-bold">Continue Listening</h2>
+
+          <div
+            className="
+    grid
+    grid-cols-2
+    gap-5
+    sm:grid-cols-3
+    lg:grid-cols-6
+  "
+          >
+            {albums.slice(0, 6).map((album) => (
+              <AlbumCard
+                key={album.id}
+                album={album}
+                server={server}
+                username={username}
+                password={password}
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-12">
           <h2 className="mb-5 text-2xl font-bold">Recently Added</h2>
 
           {loading ? (
@@ -392,6 +438,30 @@ export default function Home() {
               ))}
             </div>
           )}
+        </section>
+
+        <section className="mt-12">
+          <h2 className="mb-5 text-2xl font-bold">More Albums</h2>
+
+          <div
+            className="
+      grid
+      grid-cols-2
+      gap-5
+      sm:grid-cols-3
+      lg:grid-cols-6
+    "
+          >
+            {albums.slice(6, 12).map((album) => (
+              <AlbumCard
+                key={album.id}
+                album={album}
+                server={server}
+                username={username}
+                password={password}
+              />
+            ))}
+          </div>
         </section>
 
         <section className="mt-12">

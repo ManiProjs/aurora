@@ -8,6 +8,8 @@ export interface Album {
   name: string;
   artist: string;
   coverArt?: string;
+  year?: number;
+  songCount?: number;
 }
 
 export interface Song {
