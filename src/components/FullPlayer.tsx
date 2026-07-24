@@ -1,8 +1,10 @@
-import { X, Pause, Play, SkipBack, SkipForward } from "lucide-react";
+import { X, Pause, Play, SkipBack, SkipForward, Music2 } from "lucide-react";
+
 import { AnimatePresence, motion } from "framer-motion";
 
 import Slider from "./Slider";
 import Queue from "./Queue";
+
 import { usePlayerStore } from "../stores/player";
 
 function formatTime(seconds: number) {
@@ -36,277 +38,309 @@ export default function FullPlayer() {
 
   const seek = usePlayerStore((s) => s.seek);
 
-  if (!fullPlayer) return null;
+  if (!fullPlayer || !song) {
+    return null;
+  }
 
   return (
     <AnimatePresence>
-      {fullPlayer && (
+      <motion.div
+        initial={{
+          opacity: 0,
+        }}
+        animate={{
+          opacity: 1,
+        }}
+        exit={{
+          opacity: 0,
+        }}
+        className="
+          fixed
+          inset-0
+          z-50
+          flex
+          items-center
+          justify-center
+          overflow-hidden
+          aurora-text
+        "
+      >
+        {/* Dynamic background */}
+
+        {album?.coverArt && (
+          <motion.img
+            src={album.coverArt}
+            alt=""
+            animate={{
+              scale: [1, 1.15, 1],
+              rotate: [0, 2, -2, 0],
+              x: [0, 20, -20, 0],
+              y: [0, -20, 20, 0],
+            }}
+            transition={{
+              duration: 18,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            className="
+      absolute
+      inset-[-10%]
+      h-[120%]
+      w-[120%]
+      object-cover
+      blur-3xl
+      saturate-150
+      opacity-60
+    "
+          />
+        )}
+
         <motion.div
+          animate={{
+            backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          className="
+    absolute
+    inset-0
+    bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.15),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.1),transparent_45%)]
+    bg-[length:200%_200%]
+    backdrop-blur-3xl
+    dark:bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.08),transparent_45%)]
+  "
+        />
+
+        <div
+          className="
+    absolute
+    inset-0
+    bg-white/60
+    dark:bg-zinc-950/75
+  "
+        />
+
+        {/* Close */}
+
+        <button
+          onClick={closeFullPlayer}
+          className="
+            aurora-glass
+            absolute
+            right-8
+            top-8
+            z-20
+            rounded-full
+            p-3
+            transition
+            hover:scale-110
+          "
+        >
+          <X size={22} />
+        </button>
+
+        <motion.div
+          key={song.id}
           initial={{
             opacity: 0,
+            y: 30,
           }}
           animate={{
             opacity: 1,
+            y: 0,
           }}
-          exit={{
-            opacity: 0,
+          transition={{
+            type: "spring",
+            stiffness: 160,
+            damping: 20,
           }}
           className="
-            fixed
-            inset-0
-            z-50
+            relative
             flex
+            w-full
+            max-w-7xl
             items-center
-            justify-center
-            overflow-hidden
-            text-white
+            gap-10
+            px-8
           "
         >
-          {/* Background */}
-          {album?.coverArt && (
-            <motion.img
-              key={album.coverArt}
-              src={album.coverArt}
-              animate={{
-                scale: [1, 1.08, 1],
-              }}
-              transition={{
-                duration: 12,
-                repeat: Infinity,
-              }}
-              className="
-                absolute
-                inset-0
-                h-full
-                w-full
-                object-cover
-                blur-3xl
-                saturate-150
-              "
-            />
-          )}
+          {/* Player */}
 
           <div
             className="
-              absolute
-              inset-0
-              bg-zinc-950/80
-              backdrop-blur-3xl
-            "
-          />
-
-          <button
-            onClick={closeFullPlayer}
-            className="
-              absolute
-              right-8
-              top-8
-              z-20
-              rounded-full
-              bg-white/10
-              p-3
-              transition
-              hover:bg-white/20
-            "
-          >
-            <X size={22} />
-          </button>
-
-          <motion.div
-            key={song.id}
-            initial={{
-              opacity: 0,
-              y: 30,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            exit={{
-              opacity: 0,
-              y: 30,
-            }}
-            transition={{
-              type: "spring",
-              stiffness: 160,
-              damping: 20,
-            }}
-            className="
-              relative
               flex
-              w-full
-              max-w-7xl
+              flex-1
+              flex-col
               items-center
-              gap-10
-              px-8
             "
           >
-            {/* Main player */}
             <div
               className="
                 flex
-                flex-1
-                flex-col
                 items-center
+                gap-8
               "
             >
-              {/* Artwork + Info */}
-              <div
-                className="
-                  flex
-                  items-center
-                  gap-8
-                "
-              >
-                {album?.coverArt && (
-                  <motion.img
-                    layoutId="player-artwork"
-                    src={album.coverArt}
-                    alt={album.name}
-                    className="
-                      h-64
-                      w-64
-                      rounded-3xl
-                      object-cover
-                      shadow-2xl
-                    "
-                  />
-                )}
-
-                <div className="max-w-md">
-                  <motion.h1
-                    key={song?.title}
-                    initial={{
-                      opacity: 0,
-                      x: -20,
-                    }}
-                    animate={{
-                      opacity: 1,
-                      x: 0,
-                    }}
-                    className="
-                      text-4xl
-                      font-bold
-                    "
-                  >
-                    {song.title}
-                  </motion.h1>
-
-                  <motion.p
-                    initial={{
-                      opacity: 0,
-                      x: -20,
-                    }}
-                    animate={{
-                      opacity: 1,
-                      x: 0,
-                    }}
-                    transition={{
-                      delay: 0.1,
-                    }}
-                    className="
-                      mt-3
-                      text-lg
-                      text-zinc-300
-                    "
-                  >
-                    {song?.artist}
-
-                    {song?.album && (
-                      <>
-                        {" • "}
-                        {song?.album}
-                      </>
-                    )}
-                  </motion.p>
-                </div>
-              </div>
-
-              {/* Progress */}
-              <div
-                className="
-                  mt-12
-                  flex
-                  w-full
-                  max-w-2xl
-                  items-center
-                  gap-3
-                  text-xs
-                  text-zinc-400
-                "
-              >
-                <span>{formatTime(progress)}</span>
-
-                <div className="flex-1">
-                  <Slider
-                    value={progress}
-                    min={0}
-                    max={duration || 0}
-                    onChange={seek}
-                  />
-                </div>
-
-                <span>{formatTime(duration)}</span>
-              </div>
-
-              {/* Controls */}
-              <div
-                className="
-                  mt-10
-                  flex
-                  items-center
-                  gap-10
-                "
-              >
-                <button
-                  onClick={previous}
+              {album?.coverArt ? (
+                <motion.img
+                  layoutId="player-artwork"
+                  src={album.coverArt}
+                  alt={album.name}
                   className="
-                    transition
-                    hover:scale-110
+                    h-72
+                    w-72
+                    rounded-3xl
+                    object-cover
+                    shadow-2xl
                   "
-                >
-                  <SkipBack size={36} />
-                </button>
-
-                <button
-                  onClick={playing ? pause : resume}
+                />
+              ) : (
+                <div
                   className="
                     flex
-                    h-20
-                    w-20
+                    h-72
+                    w-72
                     items-center
                     justify-center
-                    rounded-full
-                    bg-white
-                    text-black
-                    transition
-                    hover:scale-105
+                    rounded-3xl
+                    bg-zinc-200
+                    dark:bg-zinc-800
                   "
                 >
-                  {playing ? (
-                    <Pause size={38} fill="currentColor" />
-                  ) : (
-                    <Play size={38} fill="currentColor" />
-                  )}
-                </button>
+                  <Music2 size={64} />
+                </div>
+              )}
 
-                <button
-                  onClick={next}
+              <div
+                className="
+                  max-w-md
+                "
+              >
+                <motion.h1
+                  key={song.title}
+                  initial={{
+                    opacity: 0,
+                    x: -20,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    x: 0,
+                  }}
                   className="
-                    transition
-                    hover:scale-110
+                    text-5xl
+                    font-bold
                   "
                 >
-                  <SkipForward size={36} />
-                </button>
+                  {song.title}
+                </motion.h1>
+
+                <p
+                  className="
+                    aurora-text-muted
+                    mt-4
+                    text-xl
+                  "
+                >
+                  {song.artist}
+
+                  {song.album && ` • ${song.album}`}
+                </p>
               </div>
             </div>
 
-            {/* Queue */}
-            <Queue />
-          </motion.div>
+            {/* Progress */}
+
+            <div
+              className="
+                mt-12
+                flex
+                w-full
+                max-w-3xl
+                items-center
+                gap-3
+                text-xs
+              "
+            >
+              <span>{formatTime(progress)}</span>
+
+              <div className="flex-1">
+                <Slider
+                  value={progress}
+                  min={0}
+                  max={duration || 1}
+                  onChange={seek}
+                />
+              </div>
+
+              <span>{formatTime(duration)}</span>
+            </div>
+
+            {/* Controls */}
+
+            <div
+              className="
+                mt-10
+                flex
+                items-center
+                gap-10
+              "
+            >
+              <button
+                onClick={previous}
+                className="
+                  aurora-button
+                  rounded-full
+                  p-3
+                "
+              >
+                <SkipBack size={36} />
+              </button>
+
+              <motion.button
+                whileTap={{
+                  scale: 0.9,
+                }}
+                onClick={playing ? pause : resume}
+                className="
+                  flex
+                  h-20
+                  w-20
+                  items-center
+                  justify-center
+                  rounded-full
+                  bg-zinc-900
+                  text-white
+                  shadow-xl
+                  dark:bg-white
+                  dark:text-black
+                "
+              >
+                {playing ? (
+                  <Pause size={38} fill="currentColor" />
+                ) : (
+                  <Play size={38} fill="currentColor" />
+                )}
+              </motion.button>
+
+              <button
+                onClick={next}
+                className="
+                  aurora-button
+                  rounded-full
+                  p-3
+                "
+              >
+                <SkipForward size={36} />
+              </button>
+            </div>
+          </div>
+
+          <Queue />
         </motion.div>
-      )}
+      </motion.div>
     </AnimatePresence>
   );
 }
