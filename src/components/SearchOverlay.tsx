@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, X, Play } from "lucide-react";
 
@@ -20,28 +20,67 @@ export default function SearchOverlay() {
 
   const playQueue = usePlayerStore((s) => s.playQueue);
 
-  const [results, setResults] = useState<{
-    song?: any[];
-    album?: any[];
-    artist?: any[];
-  } | null>(null);
+  const [results, setResults] = useState<any>(null);
 
   const [loading, setLoading] = useState(false);
 
-  // ESC close
+  const [selected, setSelected] = useState(0);
+
+  const flatResults = useMemo(() => {
+    if (!results) return [];
+
+    return [
+      ...(results.song ?? []).map((item: any) => ({
+        type: "song",
+        item,
+      })),
+
+      ...(results.album ?? []).map((item: any) => ({
+        type: "album",
+        item,
+      })),
+
+      ...(results.artist ?? []).map((item: any) => ({
+        type: "artist",
+        item,
+      })),
+    ];
+  }, [results]);
+
+  useEffect(() => {
+    setSelected(0);
+  }, [results]);
+
+  // Keyboard controls
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape" && open) {
+      if (!open) return;
+
+      if (e.key === "Escape") {
         setOpen(false);
+      }
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+
+        setSelected((v) => Math.min(v + 1, flatResults.length - 1));
+      }
+
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+
+        setSelected((v) => Math.max(v - 1, 0));
+      }
+
+      if (e.key === "Enter" && flatResults[selected]) {
+        openResult(flatResults[selected]);
       }
     }
 
     window.addEventListener("keydown", handleKey);
 
-    return () => {
-      window.removeEventListener("keydown", handleKey);
-    };
-  }, [open, setOpen]);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [open, flatResults, selected]);
 
   // Search
   useEffect(() => {
@@ -58,9 +97,6 @@ export default function SearchOverlay() {
 
         const response = await client.search(query);
 
-        console.log("Search results:", response);
-
-        // FIX: search() already returns searchResult3
         setResults(response);
       } catch (error) {
         console.error("Search failed:", error);
@@ -75,24 +111,32 @@ export default function SearchOverlay() {
   }, [query, server, username, password]);
 
   async function playSong(song: any) {
-    try {
-      const client = new NavidromeClient(server, username, password);
+    const client = new NavidromeClient(server, username, password);
 
-      const songs = await client.getAlbum(song.albumId);
+    const songs = await client.getAlbum(song.albumId);
 
-      playQueue(songs, {
-        id: song.albumId,
-        name: song.album,
-        artist: song.artist,
-        coverArt: song.coverArt
-          ? getCoverArtUrl(server, username, password, song.coverArt)
-          : undefined,
-      });
+    playQueue(songs, {
+      id: song.albumId,
+      name: song.album,
+      artist: song.artist,
+      coverArt: song.coverArt
+        ? getCoverArtUrl(server, username, password, song.coverArt)
+        : undefined,
+    });
 
-      setOpen(false);
-    } catch (error) {
-      console.error("Playback failed:", error);
+    setOpen(false);
+  }
+
+  function openResult(result: any) {
+    if (result.type === "song") {
+      playSong(result.item);
     }
+  }
+
+  function artwork(item: any) {
+    if (!item.coverArt) return null;
+
+    return getCoverArtUrl(server, username, password, item.coverArt);
   }
 
   return (
@@ -118,16 +162,15 @@ export default function SearchOverlay() {
             inset-0
             z-[999]
             flex
-            items-start
             justify-center
-            bg-black/60
             pt-32
+            bg-black/60
             backdrop-blur-xl
           "
         >
           <motion.div
             initial={{
-              y: -40,
+              y: -30,
               scale: 0.95,
             }}
 
@@ -137,20 +180,13 @@ export default function SearchOverlay() {
             }}
 
             exit={{
-              y: -40,
+              y: -30,
               scale: 0.95,
-            }}
-
-            transition={{
-              type: "spring",
-              stiffness: 300,
-              damping: 25,
             }}
 
             onClick={(e) => e.stopPropagation()}
 
             className="
-              relative
               w-full
               max-w-2xl
             "
@@ -169,28 +205,28 @@ export default function SearchOverlay() {
                 shadow-2xl
               "
             >
-              <Search size={28} className="text-zinc-400" />
+              <Search className="text-zinc-400" />
 
               <input
                 autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search music..."
+
                 className="
                   flex-1
                   bg-transparent
                   text-2xl
-                  text-white
                   outline-none
-                  placeholder:text-zinc-500
+                "
+
+                placeholder="
+                  Search music...
                 "
               />
 
               <kbd
                 className="
                   rounded-md
-                  border
-                  border-white/10
                   bg-white/5
                   px-2
                   py-1
@@ -201,17 +237,8 @@ export default function SearchOverlay() {
                 ESC
               </kbd>
 
-              <button
-                onClick={() => setOpen(false)}
-                className="
-                  rounded-full
-                  p-2
-                  text-zinc-400
-                  hover:bg-white/10
-                  hover:text-white
-                "
-              >
-                <X size={22} />
+              <button onClick={() => setOpen(false)}>
+                <X />
               </button>
             </div>
 
@@ -228,90 +255,79 @@ export default function SearchOverlay() {
                   p-3
                 "
               >
-                {loading && (
-                  <p
-                    className="
-                      p-4
-                      text-zinc-400
-                    "
-                  >
-                    Searching...
-                  </p>
-                )}
+                {loading && <p className="p-4 text-zinc-400">Searching...</p>}
 
-                {!loading &&
-                  !results?.song?.length &&
-                  !results?.album?.length &&
-                  !results?.artist?.length && (
-                    <p
-                      className="
-                        p-4
-                        text-zinc-400
-                      "
+                {flatResults.map((result, index) => {
+                  const item = result.item;
+
+                  return (
+                    <button
+                      key={item.id}
+
+                      onMouseEnter={() => setSelected(index)}
+
+                      onClick={() => openResult(result)}
+
+                      className={`
+                          flex
+                          w-full
+                          items-center
+                          gap-4
+                          rounded-xl
+                          p-3
+                          text-left
+                          transition
+                          ${
+                            selected === index
+                              ? "bg-white/10"
+                              : "hover:bg-white/5"
+                          }
+                        `}
                     >
-                      No results
-                    </p>
-                  )}
+                      {artwork(item) ? (
+                        <img
+                          src={artwork(item)!}
+                          className="
+                              h-12
+                              w-12
+                              rounded-lg
+                              object-cover
+                            "
+                        />
+                      ) : (
+                        <div
+                          className="
+                              h-12
+                              w-12
+                              rounded-lg
+                              bg-white/10
+                            "
+                        />
+                      )}
 
-                {results?.song?.map((song) => (
-                  <button
-                    key={song.id}
-                    onClick={() => playSong(song)}
-                    className="
-                        flex
-                        w-full
-                        items-center
-                        justify-between
-                        rounded-xl
-                        p-3
-                        text-left
-                        hover:bg-white/10
-                      "
-                  >
-                    <div>
-                      <p className="font-semibold">{song.title}</p>
-
-                      <p
+                      <div
                         className="
-                            text-sm
-                            text-zinc-400
+                            flex-1
                           "
                       >
-                        {song.artist}
-                      </p>
-                    </div>
+                        <p className="font-semibold">
+                          {item.title ?? item.name}
+                        </p>
 
-                    <Play size={18} />
-                  </button>
-                ))}
+                        <p
+                          className="
+                              text-sm
+                              text-zinc-400
+                            "
+                        >
+                          {item.artist ?? result.type}
+                        </p>
+                      </div>
 
-                {results?.album?.map((album) => (
-                  <div
-                    key={album.id}
-                    className="
-                        rounded-xl
-                        p-3
-                        text-zinc-300
-                        hover:bg-white/10
-                      "
-                  >
-                    Album: {album.name}
-                  </div>
-                ))}
-
-                {results?.artist?.map((artist) => (
-                  <div
-                    key={artist.id}
-                    className="
-                        rounded-xl
-                        p-3
-                        text-zinc-300
-                        hover:bg-white/10
-                      "
-                  >
-                    Artist: {artist.name}
-                  </div>
-                ))}
+                      {result.type === "song" && <Play size={18} />}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </motion.div>
