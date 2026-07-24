@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+.input {
+  @apply mt-4 w-full rounded-xl bg-zinc-800 px-4 py-3 text-white outline-none;
+}
+
+.input:focus {
+  @apply ring-2 ring-white/20;
+}
