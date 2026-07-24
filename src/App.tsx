@@ -15,6 +15,7 @@ import Songs from "./pages/Songs";
 import Search from "./pages/Search";
 import Settings from "./pages/Settings";
 import AlbumPage from "./pages/Album";
+import ArtistPage from "./pages/Artist";
 
 import { useNavigationStore } from "./stores/navigation";
 
@@ -40,6 +41,9 @@ export default function App() {
 
       case "artists":
         return <Artists />;
+
+      case "artist":
+        return <ArtistPage />;
 
       case "songs":
         return <Songs />;

@@ -1,8 +1,3 @@
-export interface Artist {
-  id: string;
-  name: string;
-}
-
 export interface Album {
   id: string;
   name: string;
@@ -20,4 +15,12 @@ export interface Song {
   albumId?: string;
   coverArt?: string;
   duration?: number;
+}
+
+export interface Artist {
+  id: string;
+  name: string;
+  albumCount?: number;
+  coverArt?: string;
+  artistImageUrl?: string;
 }

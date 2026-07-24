@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Album, Song } from "./types";
+import type { Album, Song, Artist } from "./types";
 
 interface SubsonicResponse<T> {
   status: string;
@@ -103,9 +103,17 @@ export class NavidromeClient {
     return response.album.song ?? [];
   }
 
-  async search(query: string): Promise<SearchResult3> {
+  async search(query: string) {
     const response = await this.request<{
-      searchResult3: SearchResult3;
+      searchResult3: {
+        song?: Song[];
+        album?: Album[];
+        artist?: {
+          id: string;
+          name: string;
+          albumCount?: number;
+        }[];
+      };
     }>("search3", {
       query,
       songCount: "10",
@@ -123,5 +131,75 @@ export class NavidromeClient {
       `&u=${this.username}` +
       `&p=${this.password}`
     );
+  }
+
+  async getArtists(): Promise<Artist[]> {
+    const response = await this.request<{
+      artists: {
+        index: {
+          artist: Artist[];
+        }[];
+      };
+    }>("getArtists");
+
+    return response.artists.index.flatMap((item) => item.artist);
+  }
+
+  async getArtist(id: string) {
+    const response = await this.request<{
+      artist: {
+        id: string;
+        name: string;
+        album?: Album[];
+      };
+    }>("getArtist", {
+      id,
+    });
+
+    return response.artist;
+  }
+
+  async getArtistSongs(id: string): Promise<Song[]> {
+    const response = await this.request<{
+      songsByArtist: {
+        song: Song[];
+      };
+    }>("getSongsByArtist", {
+      id,
+    });
+
+    return response.songsByArtist.song ?? [];
+  }
+
+  async getSongsByArtist(artistName: string): Promise<Song[]> {
+    const response = await this.request<{
+      searchResult3: {
+        song?: Song[];
+      };
+    }>("search3", {
+      query: `artist:${artistName}`,
+      songCount: "500",
+      albumCount: "0",
+      artistCount: "0",
+    });
+
+    return response.searchResult3.song ?? [];
+  }
+
+  async getArtistImage(artistId: string): Promise<string | null> {
+    const response = await this.request<{
+      artist: {
+        id: string;
+        coverArt?: string;
+      };
+    }>("getArtist", {
+      id: artistId,
+    });
+
+    if (!response.artist.coverArt) {
+      return null;
+    }
+
+    return this.getCoverArtUrl(response.artist.coverArt);
   }
 }

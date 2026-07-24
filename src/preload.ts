@@ -12,9 +12,15 @@ interface AuroraBridge {
   loadAuth: () => Promise<AuthData | null>;
 }
 
-const auroraApi: AuroraBridge = {
+const authApi: AuroraBridge = {
   saveAuth: (auth: AuthData) => ipcRenderer.invoke("auth:save", auth),
   loadAuth: () => ipcRenderer.invoke("auth:load"),
 };
 
-contextBridge.exposeInMainWorld("auth", auroraApi);
+contextBridge.exposeInMainWorld("auth", authApi);
+
+const auroraApi = {
+  getArtistImage: (name: string) => ipcRenderer.invoke("artist:image", name),
+};
+
+contextBridge.exposeInMainWorld("aurora", auroraApi);
