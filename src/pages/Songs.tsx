@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Play } from "lucide-react";
+import { Play, Pause } from "lucide-react";
 import { motion } from "framer-motion";
 
 import type { Song } from "../api/types";
@@ -8,15 +8,30 @@ import { NavidromeClient } from "../api/navidrome";
 
 import { useAuthStore } from "../stores/auth";
 import { usePlayerStore } from "../stores/player";
+
 import { getCoverArtUrl } from "../api/utils";
+
+function formatTime(seconds?: number) {
+  if (!seconds) return "";
+
+  const min = Math.floor(seconds / 60);
+  const sec = Math.floor(seconds % 60)
+    .toString()
+    .padStart(2, "0");
+
+  return `${min}:${sec}`;
+}
 
 export default function Songs() {
   const { server, username, password } = useAuthStore();
 
   const playQueue = usePlayerStore((s) => s.playQueue);
 
-  const [songs, setSongs] = useState<Song[]>([]);
+  const current = usePlayerStore((s) => s.current);
 
+  const playing = usePlayerStore((s) => s.playing);
+
+  const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,11 +53,13 @@ export default function Songs() {
   }, [server, username, password]);
 
   function playSong(index: number) {
+    const song = songs[index];
+
     playQueue(songs.slice(index), {
-      id: songs[index].id,
-      name: songs[index].album,
-      artist: songs[index].artist,
-      coverArt: songs[index].coverArt,
+      id: song.album ?? song.id,
+      name: song.album ?? "",
+      artist: song.artist ?? "",
+      coverArt: song.coverArt,
     });
   }
 
@@ -70,19 +87,24 @@ export default function Songs() {
       <div
         className="
           overflow-hidden
-          rounded-2xl
+          rounded-3xl
           border
           border-white/10
+          bg-zinc-900/50
+          backdrop-blur-xl
         "
       >
-        {songs.map((song, index) => (
-          <motion.button
-            key={song.id}
-            onClick={() => playSong(index)}
-            whileHover={{
-              backgroundColor: "rgba(255,255,255,0.08)",
-            }}
-            className="
+        {songs.map((song, index) => {
+          const active = current?.id === song.id;
+
+          return (
+            <motion.button
+              key={song.id}
+              onClick={() => playSong(index)}
+              whileHover={{
+                x: 6,
+              }}
+              className={`
                 group
                 flex
                 w-full
@@ -91,22 +113,24 @@ export default function Songs() {
                 border-b
                 border-white/5
                 px-5
-                py-4
+                py-3
                 text-left
-              "
-          >
-            <div
-              className="
-    relative
-    h-12
-    w-12
-    overflow-hidden
-    rounded-xl
-    shrink-0
-  "
+                transition
+
+                ${active ? "bg-white/10" : "hover:bg-white/5"}
+              `}
             >
-              {song.coverArt ? (
-                <>
+              <div
+                className="
+                  relative
+                  h-14
+                  w-14
+                  shrink-0
+                  overflow-hidden
+                  rounded-xl
+                "
+              >
+                {song.coverArt ? (
                   <img
                     src={getCoverArtUrl(
                       server,
@@ -114,82 +138,95 @@ export default function Songs() {
                       password,
                       song.coverArt,
                     )}
-                    alt={song.album}
                     loading="lazy"
                     className="
-          h-full
-          w-full
-          object-cover
-        "
+                      h-full
+                      w-full
+                      object-cover
+                    "
                   />
-
+                ) : (
                   <div
                     className="
-          absolute
-          inset-0
-          flex
-          items-center
-          justify-center
-          bg-black/50
-          opacity-0
-          transition
-          group-hover:opacity-100
-        "
+                      flex
+                      h-full
+                      items-center
+                      justify-center
+                      bg-zinc-800
+                    "
                   >
-                    <Play
-                      size={18}
-                      fill="currentColor"
-                      className="text-white"
-                    />
+                    <Play size={18} />
                   </div>
-                </>
-              ) : (
+                )}
+
                 <div
                   className="
-        flex
-        h-full
-        w-full
-        items-center
-        justify-center
-        bg-zinc-800
-      "
+                    absolute
+                    inset-0
+                    flex
+                    items-center
+                    justify-center
+                    bg-black/50
+                    opacity-0
+                    transition
+                    group-hover:opacity-100
+                  "
                 >
-                  <Play size={18} className="text-zinc-500" />
+                  {active && playing ? (
+                    <Pause size={20} fill="white" />
+                  ) : (
+                    <Play size={20} fill="white" />
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
 
-            <div className="flex-1">
-              <p
-                className="
+              <div className="flex-1 min-w-0">
+                <p
+                  className="
+                    truncate
                     font-medium
                   "
-              >
-                {song.title}
-              </p>
+                >
+                  {song.title}
+                </p>
 
-              <p
-                className="
+                <p
+                  className="
+                    truncate
                     text-sm
                     text-zinc-400
                   "
-              >
-                {song.artist}
-              </p>
-            </div>
+                >
+                  {song.artist}
+                </p>
+              </div>
 
-            <p
-              className="
+              <p
+                className="
                   hidden
+                  max-w-48
+                  truncate
                   text-sm
-                  text-zinc-400
+                  text-zinc-500
                   md:block
                 "
-            >
-              {song.album}
-            </p>
-          </motion.button>
-        ))}
+              >
+                {song.album}
+              </p>
+
+              <p
+                className="
+                  w-12
+                  text-right
+                  text-sm
+                  text-zinc-500
+                "
+              >
+                {formatTime(song.duration)}
+              </p>
+            </motion.button>
+          );
+        })}
       </div>
     </div>
   );
