@@ -45,15 +45,15 @@ export default function AlbumPage() {
     loadAlbum();
   }, [album, server, username, password]);
 
-  if (!album) {
-    return null;
-  }
-
-  const artwork = album.coverArt
+  const artwork = album?.coverArt
     ? getCoverArtUrl(server, username, password, album.coverArt)
     : null;
 
   const albumColor = useAlbumColor(artwork);
+
+  if (!album) {
+    return null;
+  }
 
   function playAlbum() {
     playQueue(songs, {
