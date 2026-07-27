@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, X, Play } from "lucide-react";
 
@@ -21,13 +21,16 @@ export default function SearchOverlay() {
   const playQueue = usePlayerStore((s) => s.playQueue);
 
   const [results, setResults] = useState<any>(null);
-
   const [loading, setLoading] = useState(false);
 
   const [selected, setSelected] = useState(0);
 
+  const resultRefs = useRef<Record<number, HTMLButtonElement | null>>({});
+
   const flatResults = useMemo(() => {
-    if (!results) return [];
+    if (!results) {
+      return [];
+    }
 
     return [
       ...(results.song ?? []).map((item: any) => ({
@@ -51,10 +54,24 @@ export default function SearchOverlay() {
     setSelected(0);
   }, [results]);
 
-  // Keyboard controls
+  useEffect(() => {
+    const element = resultRefs.current[selected];
+
+    if (!element) {
+      return;
+    }
+
+    element.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    });
+  }, [selected]);
+
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
-      if (!open) return;
+      if (!open) {
+        return;
+      }
 
       if (e.key === "Escape") {
         setOpen(false);
@@ -63,26 +80,31 @@ export default function SearchOverlay() {
       if (e.key === "ArrowDown") {
         e.preventDefault();
 
-        setSelected((v) => Math.min(v + 1, flatResults.length - 1));
+        setSelected((value) => Math.min(value + 1, flatResults.length - 1));
       }
 
       if (e.key === "ArrowUp") {
         e.preventDefault();
 
-        setSelected((v) => Math.max(v - 1, 0));
+        setSelected((value) => Math.max(value - 1, 0));
       }
 
-      if (e.key === "Enter" && flatResults[selected]) {
-        openResult(flatResults[selected]);
+      if (e.key === "Enter") {
+        const result = flatResults[selected];
+
+        if (result) {
+          openResult(result);
+        }
       }
     }
 
     window.addEventListener("keydown", handleKey);
 
-    return () => window.removeEventListener("keydown", handleKey);
+    return () => {
+      window.removeEventListener("keydown", handleKey);
+    };
   }, [open, flatResults, selected]);
 
-  // Search
   useEffect(() => {
     if (!query.trim()) {
       setResults(null);
@@ -95,12 +117,9 @@ export default function SearchOverlay() {
 
         const client = new NavidromeClient(server, username, password);
 
-        const response = await client.search(query);
-
-        setResults(response);
+        setResults(await client.search(query));
       } catch (error) {
         console.error("Search failed:", error);
-
         setResults(null);
       } finally {
         setLoading(false);
@@ -134,29 +153,118 @@ export default function SearchOverlay() {
   }
 
   function artwork(item: any) {
-    if (!item.coverArt) return null;
+    if (!item.coverArt) {
+      return null;
+    }
 
     return getCoverArtUrl(server, username, password, item.coverArt);
+  }
+
+  let index = 0;
+
+  function renderGroup(title: string, items: any[], type: string) {
+    if (!items?.length) {
+      return null;
+    }
+
+    return (
+      <div>
+        <p
+          className="
+            px-3
+            py-2
+            text-xs
+            font-semibold
+            uppercase
+            text-zinc-500
+          "
+        >
+          {title}
+        </p>
+
+        {items.map((item) => {
+          const currentIndex = index++;
+
+          const image = artwork(item);
+
+          return (
+            <button
+              key={item.id}
+              ref={(element) => {
+                resultRefs.current[currentIndex] = element;
+              }}
+              onMouseEnter={() => setSelected(currentIndex)}
+              onClick={() =>
+                openResult({
+                  type,
+                  item,
+                })
+              }
+              className={`
+                flex
+                w-full
+                items-center
+                gap-4
+                rounded-xl
+                p-3
+                text-left
+                transition
+                ${
+                  selected === currentIndex ? "bg-white/10" : "hover:bg-white/5"
+                }
+              `}
+            >
+              {image ? (
+                <img
+                  src={image}
+                  alt=""
+                  className="
+                    h-12
+                    w-12
+                    rounded-lg
+                    object-cover
+                  "
+                />
+              ) : (
+                <div
+                  className="
+                    h-12
+                    w-12
+                    rounded-lg
+                    bg-white/10
+                  "
+                />
+              )}
+
+              <div className="flex-1">
+                <p className="font-semibold">{item.title ?? item.name}</p>
+
+                <p
+                  className="
+                    text-sm
+                    text-zinc-400
+                  "
+                >
+                  {item.artist ?? type}
+                </p>
+              </div>
+
+              {type === "song" && <Play size={18} />}
+            </button>
+          );
+        })}
+      </div>
+    );
   }
 
   return (
     <AnimatePresence>
       {open && (
         <motion.div
-          initial={{
-            opacity: 0,
-          }}
-
-          animate={{
-            opacity: 1,
-          }}
-
-          exit={{
-            opacity: 0,
-          }}
-
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           onClick={() => setOpen(false)}
-
           className="
             fixed
             inset-0
@@ -169,27 +277,8 @@ export default function SearchOverlay() {
           "
         >
           <motion.div
-            initial={{
-              y: -30,
-              scale: 0.95,
-            }}
-
-            animate={{
-              y: 0,
-              scale: 1,
-            }}
-
-            exit={{
-              y: -30,
-              scale: 0.95,
-            }}
-
             onClick={(e) => e.stopPropagation()}
-
-            className="
-              w-full
-              max-w-2xl
-            "
+            className="w-full max-w-2xl"
           >
             <div
               className="
@@ -197,12 +286,9 @@ export default function SearchOverlay() {
                 items-center
                 gap-4
                 rounded-3xl
-                border
-                border-white/10
                 bg-zinc-900
                 px-6
                 py-5
-                shadow-2xl
               "
             >
               <Search className="text-zinc-400" />
@@ -211,31 +297,14 @@ export default function SearchOverlay() {
                 autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-
                 className="
                   flex-1
                   bg-transparent
                   text-2xl
                   outline-none
                 "
-
-                placeholder="
-                  Search music...
-                "
+                placeholder="Search music..."
               />
-
-              <kbd
-                className="
-                  rounded-md
-                  bg-white/5
-                  px-2
-                  py-1
-                  text-xs
-                  text-zinc-500
-                "
-              >
-                ESC
-              </kbd>
 
               <button onClick={() => setOpen(false)}>
                 <X />
@@ -249,85 +318,21 @@ export default function SearchOverlay() {
                   max-h-96
                   overflow-y-auto
                   rounded-3xl
-                  border
-                  border-white/10
                   bg-zinc-900
                   p-3
                 "
               >
                 {loading && <p className="p-4 text-zinc-400">Searching...</p>}
 
-                {flatResults.map((result, index) => {
-                  const item = result.item;
+                {results && (
+                  <>
+                    {renderGroup("Songs", results.song, "song")}
 
-                  return (
-                    <button
-                      key={item.id}
+                    {renderGroup("Albums", results.album, "album")}
 
-                      onMouseEnter={() => setSelected(index)}
-
-                      onClick={() => openResult(result)}
-
-                      className={`
-                          flex
-                          w-full
-                          items-center
-                          gap-4
-                          rounded-xl
-                          p-3
-                          text-left
-                          transition
-                          ${
-                            selected === index
-                              ? "bg-white/10"
-                              : "hover:bg-white/5"
-                          }
-                        `}
-                    >
-                      {artwork(item) ? (
-                        <img
-                          src={artwork(item)!}
-                          className="
-                              h-12
-                              w-12
-                              rounded-lg
-                              object-cover
-                            "
-                        />
-                      ) : (
-                        <div
-                          className="
-                              h-12
-                              w-12
-                              rounded-lg
-                              bg-white/10
-                            "
-                        />
-                      )}
-
-                      <div
-                        className="
-                            flex-1
-                          "
-                      >
-                        <p className="font-semibold">
-                          {item.title ?? item.name}
-                        </p>
-
-                        <p
-                          className="
-                              text-sm
-                              text-zinc-400
-                            "
-                        >
-                          {item.artist ?? result.type}
-                        </p>
-                      </div>
-
-                      {result.type === "song" && <Play size={18} />}
-                    </button>
-                  );
-                })}
+                    {renderGroup("Artists", results.artist, "artist")}
+                  </>
+                )}
               </div>
             )}
           </motion.div>

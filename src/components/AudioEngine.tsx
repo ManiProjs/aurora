@@ -17,6 +17,7 @@ export default function AudioEngine(): null {
 
   const song = usePlayerStore((s) => s.current);
   const playing = usePlayerStore((s) => s.playing);
+  const stopVersion = usePlayerStore((s) => s.stopVersion);
 
   const volume = usePlayerStore((s) => s.volume);
 
@@ -35,9 +36,21 @@ export default function AudioEngine(): null {
 
   const rememberVolume = useSettingsStore((s) => s.rememberVolume);
 
+  // Stop audio completely
+  useEffect(() => {
+    const element = audio.current;
+
+    element.pause();
+    element.currentTime = 0;
+    element.removeAttribute("src");
+    element.load();
+  }, [stopVersion]);
+
   // Load song
   useEffect(() => {
-    if (!song) return;
+    if (!song) {
+      return;
+    }
 
     const element = audio.current;
     const request = ++playRequest.current;
@@ -49,6 +62,10 @@ export default function AudioEngine(): null {
     element.load();
 
     const start = async () => {
+      if (!playing) {
+        return;
+      }
+
       try {
         await element.play();
 
@@ -71,11 +88,12 @@ export default function AudioEngine(): null {
     };
   }, [song, server, username, password]);
 
+  // Default volume
   useEffect(() => {
     if (!rememberVolume) {
       audio.current.volume = 1;
     }
-  }, []);
+  }, [rememberVolume]);
 
   // Play / pause
   useEffect(() => {
