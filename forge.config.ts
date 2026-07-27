@@ -21,11 +21,7 @@ const config: ForgeConfig = {
 
     appBundleId: "com.maniarasteh.aurora",
 
-    icon: [
-      path.join(process.cwd(), "icon", "icon.icns"),
-
-      path.join(process.cwd(), "icon", "icon.icon"),
-    ],
+    icon: path.join(process.cwd(), "icon", "icon"),
 
     appCategoryType: "public.app-category.music",
   },
