@@ -1,0 +1,98 @@
+name: Build Aurora
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run make
+
+      - name: Upload Windows build
+        uses: actions/upload-artifact@v4
+        with:
+          name: Aurora-Windows
+          path: out/make/**
+
+
+  build-linux:
+    name: Build Linux
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y rpm
+
+      - name: Build
+        run: npm run make
+
+      - name: Upload Linux build
+        uses: actions/upload-artifact@v4
+        with:
+          name: Aurora-Linux
+          path: out/make/**
+
+
+  release:
+    name: Create GitHub Release
+    needs:
+      - build-windows
+      - build-linux
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Windows build
+        uses: actions/download-artifact@v4
+        with:
+          name: Aurora-Windows
+          path: release
+
+      - name: Download Linux build
+        uses: actions/download-artifact@v4
+        with:
+          name: Aurora-Linux
+          path: release
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/**
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

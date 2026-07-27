@@ -82,8 +82,10 @@ Download the latest pre-release from GitHub Releases.
 Aurora currently supports:
 
 - macOS (Apple Silicon)
+- Windows (x64)
+- Linux (x64)
 
-Windows and Linux builds are planned.
+Builds for Windows and Linux are provided through GitHub Actions.
 
 ---
 
