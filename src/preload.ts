@@ -24,3 +24,11 @@ const auroraApi = {
 };
 
 contextBridge.exposeInMainWorld("aurora", auroraApi);
+
+contextBridge.exposeInMainWorld("discord", {
+  update: (data: unknown) => ipcRenderer.send("discord:update", data),
+
+  start: () => ipcRenderer.send("discord:start"),
+
+  stop: () => ipcRenderer.send("discord:stop"),
+});

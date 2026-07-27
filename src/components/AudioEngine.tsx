@@ -5,6 +5,8 @@ import { useAuthStore } from "../stores/auth";
 
 import { getStreamUrl } from "../api/stream";
 
+import { useSettingsStore } from "../stores/settings";
+
 export default function AudioEngine(): null {
   const audio = useRef<HTMLAudioElement | null>(null);
   const playRequest = useRef(0);
@@ -124,7 +126,13 @@ export default function AudioEngine(): null {
     };
 
     const ended = () => {
-      next();
+      const autoplay = useSettingsStore.getState().autoplay;
+
+      if (autoplay) {
+        next();
+      } else {
+        usePlayerStore.getState().pause();
+      }
     };
 
     element.addEventListener("timeupdate", time);

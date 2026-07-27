@@ -5,6 +5,8 @@ import type { LyricLine } from "../api/lyrics";
 
 import { usePlayerStore } from "../stores/player";
 
+import { useSettingsStore } from "../stores/settings";
+
 interface Props {
   lyrics: LyricLine[];
   progress: number;
@@ -21,6 +23,8 @@ export default function LyricsPanel({ lyrics, progress }: Props) {
 
   const manualSeek = useRef(false);
 
+  const autoScrollLyrics = useSettingsStore((s) => s.autoScrollLyrics);
+
   function findCurrentLine(time: number) {
     let index = 0;
 
@@ -35,7 +39,11 @@ export default function LyricsPanel({ lyrics, progress }: Props) {
     return index;
   }
 
-  function scrollToLine(index: number) {
+  function scrollToLine(index: number, force = false) {
+    if (!autoScrollLyrics && !force) {
+      return;
+    }
+
     const element = lineRefs.current[index];
 
     if (!element || !containerRef.current) {
@@ -72,7 +80,7 @@ export default function LyricsPanel({ lyrics, progress }: Props) {
     seek(line.time);
 
     requestAnimationFrame(() => {
-      scrollToLine(index);
+      scrollToLine(index, true);
     });
   }
 

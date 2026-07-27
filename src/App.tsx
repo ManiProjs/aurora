@@ -20,6 +20,7 @@ import SearchOverlay from "./components/SearchOverlay";
 import AudioEngine from "./components/AudioEngine";
 import MiniPlayer from "./components/MiniPlayer";
 import FullPlayer from "./components/FullPlayer";
+import { useDiscordRPC } from "./hooks/useDiscordRPC";
 
 export default function App() {
   const login = useAuthStore((s) => s.login);
@@ -28,6 +29,8 @@ export default function App() {
   const page = useNavigationStore((s) => s.page);
 
   const [checkingAuth, setCheckingAuth] = useState(true);
+
+  useDiscordRPC();
 
   function renderPage() {
     switch (page) {

@@ -17,5 +17,18 @@ declare global {
 
       clearAuth(): Promise<void>;
     };
+
+    discord?: {
+      update(data: {
+        title: string;
+        artist?: string;
+        album?: string;
+        duration?: number;
+      }): void;
+
+      start(): void;
+
+      stop(): void;
+    };
   }
 }

@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { User } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useAnimations } from "../hooks/useAnimations";
 
 import type { Artist } from "../api/types";
 
@@ -19,27 +20,43 @@ export default function ArtistCard({ artist }: Props) {
     setImageError(false);
   }, [artist.artistImageUrl]);
 
+  const animations = useAnimations();
+
   return (
     <motion.button
-      onClick={() => openArtist(artist)}
+      initial={
+        animations
+          ? {
+              opacity: 0,
+              y: 20,
+            }
+          : false
+      }
 
-      initial={{
-        opacity: 0,
-        y: 20,
-      }}
+      animate={
+        animations
+          ? {
+              opacity: 1,
+              y: 0,
+            }
+          : undefined
+      }
 
-      animate={{
-        opacity: 1,
-        y: 0,
-      }}
+      whileHover={
+        animations
+          ? {
+              y: -8,
+            }
+          : undefined
+      }
 
-      whileHover={{
-        y: -8,
-      }}
-
-      whileTap={{
-        scale: 0.96,
-      }}
+      whileTap={
+        animations
+          ? {
+              scale: 0.96,
+            }
+          : undefined
+      }
 
       transition={{
         type: "spring",
