@@ -125,12 +125,15 @@ export class NavidromeClient {
   }
 
   getCoverArtUrl(id: string): string {
-    return (
-      `${this.baseUrl}/rest/getCoverArt` +
-      `?id=${id}` +
-      `&u=${this.username}` +
-      `&p=${this.password}`
-    );
+    const params = new URLSearchParams({
+      id,
+      u: this.username,
+      p: this.password,
+      v: "1.16.1",
+      c: "Aurora",
+    });
+
+    return `${this.baseUrl}/rest/getCoverArt?${params}`;
   }
 
   async getArtists(): Promise<Artist[]> {
@@ -196,11 +199,13 @@ export class NavidromeClient {
       id: artistId,
     });
 
-    if (!response.artist.coverArt) {
+    const coverArt = response.artist.coverArt;
+
+    if (!coverArt) {
       return null;
     }
 
-    return this.getCoverArtUrl(response.artist.coverArt);
+    return this.getCoverArtUrl(coverArt);
   }
 
   async getSongs(): Promise<Song[]> {

@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { User } from "lucide-react";
 import { useEffect, useState } from "react";
+
 import { useAnimations } from "../hooks/useAnimations";
 
 import type { Artist } from "../api/types";
@@ -14,16 +15,25 @@ interface Props {
 export default function ArtistCard({ artist }: Props) {
   const openArtist = useNavigationStore((s) => s.openArtist);
 
+  const animations = useAnimations();
+
   const [imageError, setImageError] = useState(false);
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
     setImageError(false);
+    setRetry(0);
   }, [artist.artistImageUrl]);
 
-  const animations = useAnimations();
+  function retryImage() {
+    setImageError(false);
+    setRetry((value) => value + 1);
+  }
 
   return (
     <motion.button
+      onClick={() => openArtist(artist)}
+
       initial={
         animations
           ? {
@@ -82,16 +92,34 @@ export default function ArtistCard({ artist }: Props) {
       >
         {artist.artistImageUrl && !imageError ? (
           <motion.img
+            key={`${artist.artistImageUrl}-${retry}`}
+
             src={artist.artistImageUrl}
+
             alt={artist.name}
 
             loading="lazy"
 
-            onError={() => setImageError(true)}
+            onError={() => {
+              console.error(
+                "Failed loading artist image:",
+                artist.artistImageUrl,
+              );
 
-            whileHover={{
-              scale: 1.08,
+              setImageError(true);
+
+              setTimeout(() => {
+                retryImage();
+              }, 5000);
             }}
+
+            whileHover={
+              animations
+                ? {
+                    scale: 1.08,
+                  }
+                : undefined
+            }
 
             transition={{
               duration: 0.4,
