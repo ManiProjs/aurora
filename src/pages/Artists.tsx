@@ -21,21 +21,32 @@ export default function Artists() {
 
         const data = await client.getArtists();
 
-        const artistsWithImages = await Promise.all(
-          data.map(async (artist) => {
+        // Render immediately
+        setArtists(data);
+
+        setLoading(false);
+
+        // Load images in background
+        data.forEach(async (artist) => {
+          try {
             const imageUrl = await client.getArtistImage(artist.id);
 
-            return {
-              ...artist,
-              imageUrl,
-            };
-          }),
-        );
-
-        setArtists(artistsWithImages);
+            setArtists((current) =>
+              current.map((item) =>
+                item.id === artist.id
+                  ? {
+                      ...item,
+                      artistImageUrl: imageUrl,
+                    }
+                  : item,
+              ),
+            );
+          } catch (error) {
+            console.error(`Failed loading image for ${artist.name}`, error);
+          }
+        });
       } catch (error) {
         console.error("Failed to load artists:", error);
-      } finally {
         setLoading(false);
       }
     }

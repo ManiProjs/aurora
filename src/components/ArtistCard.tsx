@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { User } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { Artist } from "../api/types";
 
@@ -14,6 +14,10 @@ export default function ArtistCard({ artist }: Props) {
   const openArtist = useNavigationStore((s) => s.openArtist);
 
   const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [artist.artistImageUrl]);
 
   return (
     <motion.button

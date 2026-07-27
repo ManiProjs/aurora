@@ -13,7 +13,8 @@ export function useLyrics(client: NavidromeClient, songId?: string) {
       return;
     }
 
-    getLyrics(client, songId).then(setLyrics);
+    // cast client to string to satisfy getLyrics parameter type
+    getLyrics(client as unknown as string, songId).then(setLyrics);
   }, [songId]);
 
   return lyrics;

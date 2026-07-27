@@ -76,8 +76,13 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
     set({
       page: previous,
       history,
+
       selectedAlbum: previous === "album" ? get().selectedAlbum : null,
-      selectedArtist: previous === "artists" ? get().selectedArtist : null,
+
+      selectedArtist:
+        previous === "artist" || previous === "artists"
+          ? get().selectedArtist
+          : null,
     });
   },
 }));
