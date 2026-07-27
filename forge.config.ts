@@ -17,6 +17,8 @@ const config: ForgeConfig = {
 
     name: "Aurora",
 
+    executableName: "aurora",
+
     appBundleId: "com.maniarasteh.aurora",
 
     icon: [
