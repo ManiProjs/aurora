@@ -11,6 +11,9 @@ interface SettingsState {
   setAutoScrollLyrics(value: boolean): void;
   setAutoplay(value: boolean): void;
   setDiscordRPC(value: boolean): void;
+
+  rememberVolume: boolean;
+  setRememberVolume(value: boolean): void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -20,6 +23,7 @@ export const useSettingsStore = create<SettingsState>()(
       autoScrollLyrics: true,
       autoplay: false,
       discordRPC: false,
+      rememberVolume: true,
 
       setAnimations(value) {
         set({
@@ -42,6 +46,12 @@ export const useSettingsStore = create<SettingsState>()(
       setDiscordRPC(value) {
         set({
           discordRPC: value,
+        });
+      },
+
+      setRememberVolume(value) {
+        set({
+          rememberVolume: value,
         });
       },
     }),

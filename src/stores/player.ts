@@ -52,6 +52,8 @@ interface PlayerState {
   setProgress(value: number): void;
   setDuration(value: number): void;
   setVolume(value: number): void;
+
+  toggle(): void;
 }
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
@@ -283,5 +285,11 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     set({
       volume: value,
     });
+  },
+
+  toggle() {
+    set((state) => ({
+      playing: !state.playing,
+    }));
   },
 }));

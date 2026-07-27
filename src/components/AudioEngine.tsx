@@ -33,11 +33,13 @@ export default function AudioEngine(): null {
   const username = useAuthStore((s) => s.username);
   const password = useAuthStore((s) => s.password);
 
+  const rememberVolume = useSettingsStore((s) => s.rememberVolume);
+
   // Load song
   useEffect(() => {
     if (!song) return;
 
-    const element = audio.current!;
+    const element = audio.current;
     const request = ++playRequest.current;
 
     element.pause();
@@ -69,9 +71,15 @@ export default function AudioEngine(): null {
     };
   }, [song, server, username, password]);
 
+  useEffect(() => {
+    if (!rememberVolume) {
+      audio.current.volume = 1;
+    }
+  }, []);
+
   // Play / pause
   useEffect(() => {
-    const element = audio.current!;
+    const element = audio.current;
 
     async function toggle() {
       if (!playing) {
@@ -95,7 +103,7 @@ export default function AudioEngine(): null {
 
   // Volume
   useEffect(() => {
-    audio.current!.volume = volume;
+    audio.current.volume = volume;
   }, [volume]);
 
   // Seek
@@ -104,7 +112,7 @@ export default function AudioEngine(): null {
       return;
     }
 
-    const element = audio.current!;
+    const element = audio.current;
 
     if (!Number.isNaN(element.duration)) {
       element.currentTime = seekPosition;
@@ -115,7 +123,7 @@ export default function AudioEngine(): null {
 
   // Events
   useEffect(() => {
-    const element = audio.current!;
+    const element = audio.current;
 
     const time = () => {
       setProgress(element.currentTime);

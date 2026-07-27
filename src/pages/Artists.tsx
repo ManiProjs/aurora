@@ -7,6 +7,8 @@ import { useAuthStore } from "../stores/auth";
 
 import ArtistCard from "../components/ArtistCard";
 
+import { Skeleton } from "../components/Skeleton";
+
 export default function Artists() {
   const { server, username, password } = useAuthStore();
 
@@ -55,7 +57,45 @@ export default function Artists() {
   }, [server, username, password]);
 
   if (loading) {
-    return <div className="p-6 text-zinc-400">Loading artists...</div>;
+    return (
+      <div
+        className="
+        grid
+        grid-cols-2
+        gap-4
+        p-6
+        sm:grid-cols-3
+        md:grid-cols-4
+        lg:grid-cols-6
+      "
+      >
+        {Array.from({
+          length: 12,
+        }).map((_, i) => (
+          <div key={i} className="space-y-3">
+            <Skeleton
+              className="
+              aspect-square
+            "
+            />
+
+            <Skeleton
+              className="
+              h-5
+              w-3/4
+            "
+            />
+
+            <Skeleton
+              className="
+              h-4
+              w-1/2
+            "
+            />
+          </div>
+        ))}
+      </div>
+    );
   }
 
   return (

@@ -21,6 +21,7 @@ import AudioEngine from "./components/AudioEngine";
 import MiniPlayer from "./components/MiniPlayer";
 import FullPlayer from "./components/FullPlayer";
 import { useDiscordRPC } from "./hooks/useDiscordRPC";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 
 export default function App() {
   const login = useAuthStore((s) => s.login);
@@ -31,6 +32,8 @@ export default function App() {
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useDiscordRPC();
+
+  useKeyboardShortcuts();
 
   function renderPage() {
     switch (page) {
