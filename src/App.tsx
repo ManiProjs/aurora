@@ -22,6 +22,7 @@ import MiniPlayer from "./components/MiniPlayer";
 import FullPlayer from "./components/FullPlayer";
 import { useDiscordRPC } from "./hooks/useDiscordRPC";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import TitleBar from "./components/TitleBar";
 
 export default function App() {
   const login = useAuthStore((s) => s.login);
@@ -119,55 +120,63 @@ export default function App() {
   return (
     <div
       className="
-        aurora-background
-        aurora-text
-        flex
-        h-screen
-        overflow-hidden
-      "
+      aurora-background
+      aurora-text
+      relative
+      h-screen
+      overflow-hidden
+    "
     >
-      <Sidebar />
+      <TitleBar />
 
-      <SearchOverlay />
-
-      <main
+      <div
         className="
+        flex
+        h-full
+        pt-10
+      "
+      >
+        <Sidebar />
+
+        <SearchOverlay />
+
+        <main
+          className="
           aurora-scrollbar
           flex-1
           overflow-y-auto
           pb-24
         "
-      >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={page}
-            initial={{
-              opacity: 0,
-              y: 16,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            exit={{
-              opacity: 0,
-              y: -16,
-            }}
-            transition={{
-              duration: 0.22,
-              ease: "easeOut",
-            }}
-            className="h-full"
-          >
-            {renderPage()}
-          </motion.div>
-        </AnimatePresence>
-      </main>
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={page}
+              initial={{
+                opacity: 0,
+                y: 16,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              exit={{
+                opacity: 0,
+                y: -16,
+              }}
+              transition={{
+                duration: 0.22,
+                ease: "easeOut",
+              }}
+              className="h-full"
+            >
+              {renderPage()}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
 
       <AudioEngine />
-
       <MiniPlayer />
-
       <FullPlayer />
     </div>
   );

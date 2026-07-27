@@ -1,5 +1,14 @@
 import { useEffect, useState } from "react";
-import { X, Pause, Play, SkipBack, SkipForward, Music2 } from "lucide-react";
+import {
+  X,
+  Pause,
+  Play,
+  SkipBack,
+  SkipForward,
+  Music2,
+  Shuffle,
+  Repeat,
+} from "lucide-react";
 
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -24,24 +33,29 @@ export default function FullPlayer() {
   const album = usePlayerStore((s) => s.album);
 
   const fullPlayer = usePlayerStore((s) => s.fullPlayer);
-
   const closeFullPlayer = usePlayerStore((s) => s.closeFullPlayer);
 
   const playing = usePlayerStore((s) => s.playing);
 
   const pause = usePlayerStore((s) => s.pause);
-
   const resume = usePlayerStore((s) => s.resume);
 
   const next = usePlayerStore((s) => s.next);
-
   const previous = usePlayerStore((s) => s.previous);
 
   const progress = usePlayerStore((s) => s.progress);
-
   const duration = usePlayerStore((s) => s.duration);
 
   const seek = usePlayerStore((s) => s.seek);
+
+  const volume = usePlayerStore((s) => s.volume);
+  const setVolume = usePlayerStore((s) => s.setVolume);
+
+  const shuffle = usePlayerStore((s) => s.shuffle);
+  const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
+
+  const repeat = usePlayerStore((s) => s.repeat);
+  const toggleRepeat = usePlayerStore((s) => s.toggleRepeat);
 
   const [lyrics, setLyrics] = useState<LyricLine[]>([]);
 
@@ -50,14 +64,66 @@ export default function FullPlayer() {
       return;
     }
 
-    async function loadLyrics() {
-      const result = await getLyrics(song.artist ?? "", song.title, song.album);
+    const currentSong = song;
 
-      setLyrics(result);
+    async function loadLyrics() {
+      try {
+        const result = await getLyrics(
+          currentSong.artist ?? "",
+          currentSong.title,
+          currentSong.album,
+        );
+
+        setLyrics(result);
+      } catch (error) {
+        console.error("Failed loading lyrics:", error);
+        setLyrics([]);
+      }
     }
 
     loadLyrics();
   }, [song]);
+
+  useEffect(() => {
+    function handleKeyboard(event: KeyboardEvent) {
+      if (!fullPlayer) {
+        return;
+      }
+
+      if (event.code === "Space") {
+        event.preventDefault();
+
+        playing ? pause() : resume();
+      }
+
+      if (event.key === "Escape") {
+        closeFullPlayer();
+      }
+
+      if (event.key === "ArrowRight") {
+        seek(Math.min(progress + 10, duration));
+      }
+
+      if (event.key === "ArrowLeft") {
+        seek(Math.max(progress - 10, 0));
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyboard);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyboard);
+    };
+  }, [
+    fullPlayer,
+    playing,
+    progress,
+    duration,
+    pause,
+    resume,
+    closeFullPlayer,
+    seek,
+  ]);
 
   if (!fullPlayer || !song) {
     return null;
@@ -69,15 +135,12 @@ export default function FullPlayer() {
         initial={{
           opacity: 0,
         }}
-
         animate={{
           opacity: 1,
         }}
-
         exit={{
           opacity: 0,
         }}
-
         className="
           fixed
           inset-0
@@ -89,29 +152,23 @@ export default function FullPlayer() {
           aurora-text
         "
       >
-        {/* Animated background */}
+        {/* Background artwork */}
 
         {album?.coverArt && (
           <motion.img
             src={album.coverArt}
             alt=""
-
             animate={{
               scale: [1, 1.15, 1],
-
               rotate: [0, 2, -2, 0],
-
               x: [0, 20, -20, 0],
-
               y: [0, -20, 20, 0],
             }}
-
             transition={{
               duration: 18,
               repeat: Infinity,
               ease: "easeInOut",
             }}
-
             className="
               absolute
               inset-[-10%]
@@ -125,39 +182,17 @@ export default function FullPlayer() {
           />
         )}
 
-        <motion.div
-          animate={{
-            backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-          }}
-
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-
-          className="
-            absolute
-            inset-0
-            bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,.18),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,.12),transparent_45%)]
-            bg-[length:200%_200%]
-            backdrop-blur-3xl
-          "
-        />
-
         <div
           className="
             absolute
             inset-0
-            bg-zinc-950/75
+            bg-zinc-950/80
+            backdrop-blur-3xl
           "
         />
 
-        {/* Close */}
-
         <button
           onClick={closeFullPlayer}
-
           className="
             aurora-glass
             absolute
@@ -175,23 +210,19 @@ export default function FullPlayer() {
 
         <motion.div
           key={song.id}
-
           initial={{
             opacity: 0,
             y: 30,
           }}
-
           animate={{
             opacity: 1,
             y: 0,
           }}
-
           transition={{
             type: "spring",
             stiffness: 160,
             damping: 20,
           }}
-
           className="
             relative
             flex
@@ -202,32 +233,40 @@ export default function FullPlayer() {
             px-8
           "
         >
-          {/* Player */}
-
           <div
             className="
-              flex-1
               flex
+              flex-1
               flex-col
               items-center
             "
           >
-            <div
-              className="
-                flex
-                items-center
-                gap-8
-              "
-            >
+            <div className="relative">
+              <motion.div
+                animate={{
+                  scale: [1, 1.08, 1],
+                  opacity: [0.4, 0.8, 0.4],
+                }}
+                transition={{
+                  duration: 6,
+                  repeat: Infinity,
+                }}
+                className="
+                  absolute
+                  inset-0
+                  rounded-3xl
+                  bg-white/20
+                  blur-3xl
+                "
+              />
+
               {album?.coverArt ? (
                 <motion.img
                   layoutId="player-artwork"
-
                   src={album.coverArt}
-
                   alt={album.name}
-
                   className="
+                    relative
                     h-72
                     w-72
                     rounded-3xl
@@ -250,48 +289,42 @@ export default function FullPlayer() {
                   <Music2 size={64} />
                 </div>
               )}
-
-              <div>
-                <motion.h1
-                  key={song.title}
-
-                  initial={{
-                    opacity: 0,
-                    x: -20,
-                  }}
-
-                  animate={{
-                    opacity: 1,
-                    x: 0,
-                  }}
-
-                  className="
-                    text-5xl
-                    font-bold
-                  "
-                >
-                  {song.title}
-                </motion.h1>
-
-                <p
-                  className="
-                    mt-4
-                    text-xl
-                    aurora-text-muted
-                  "
-                >
-                  {song.artist}
-
-                  {song.album && ` • ${song.album}`}
-                </p>
-              </div>
             </div>
 
-            {/* Progress */}
+            <motion.h1
+              key={song.title}
+              initial={{
+                opacity: 0,
+                y: 10,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              className="
+                mt-8
+                text-5xl
+                font-bold
+              "
+            >
+              {song.title}
+            </motion.h1>
+
+            <p
+              className="
+                mt-3
+                text-xl
+                aurora-text-muted
+              "
+            >
+              {song.artist}
+
+              {song.album && ` • ${song.album}`}
+            </p>
 
             <div
               className="
-                mt-12
+                mt-10
                 flex
                 w-full
                 max-w-3xl
@@ -301,28 +334,36 @@ export default function FullPlayer() {
             >
               <span>{formatTime(progress)}</span>
 
-              <div className="flex-1">
-                <Slider
-                  value={progress}
-                  min={0}
-                  max={duration || 1}
-                  onChange={seek}
-                />
-              </div>
+              <Slider
+                value={progress}
+                min={0}
+                max={duration || 1}
+                onChange={seek}
+              />
 
               <span>{formatTime(duration)}</span>
             </div>
 
-            {/* Controls */}
-
             <div
               className="
-                mt-10
+                mt-8
                 flex
                 items-center
-                gap-10
+                gap-6
               "
             >
+              <button
+                onClick={toggleShuffle}
+                className={`
+                  aurora-button
+                  rounded-full
+                  p-3
+                  ${shuffle ? "text-white" : "text-zinc-400"}
+                `}
+              >
+                <Shuffle />
+              </button>
+
               <button
                 onClick={previous}
                 className="
@@ -331,16 +372,14 @@ export default function FullPlayer() {
                   p-3
                 "
               >
-                <SkipBack size={36} />
+                <SkipBack size={32} />
               </button>
 
               <motion.button
                 whileTap={{
                   scale: 0.9,
                 }}
-
                 onClick={playing ? pause : resume}
-
                 className="
                   flex
                   h-20
@@ -368,12 +407,31 @@ export default function FullPlayer() {
                   p-3
                 "
               >
-                <SkipForward size={36} />
+                <SkipForward size={32} />
+              </button>
+
+              <button
+                onClick={toggleRepeat}
+                className="
+                  aurora-button
+                  rounded-full
+                  p-3
+                "
+              >
+                <Repeat />
               </button>
             </div>
-          </div>
 
-          {/* Lyrics + Queue */}
+            <div className="mt-8 w-64">
+              <Slider
+                value={volume}
+                min={0}
+                max={1}
+                step={0.01}
+                onChange={setVolume}
+              />
+            </div>
+          </div>
 
           <div
             className="
