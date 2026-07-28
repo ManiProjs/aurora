@@ -30,5 +30,9 @@ declare global {
 
       stop(): void;
     };
+
+    updater: {
+      onUpdate(callback: (event: string, data?: unknown) => void): void;
+    };
   }
 }

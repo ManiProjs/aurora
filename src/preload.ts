@@ -32,3 +32,21 @@ contextBridge.exposeInMainWorld("discord", {
 
   update: (data: unknown) => ipcRenderer.invoke("discord:update", data),
 });
+
+contextBridge.exposeInMainWorld("updater", {
+  onUpdate(callback: (event: string, data?: unknown) => void) {
+    const channels = [
+      "update:checking",
+      "update:available",
+      "update:progress",
+      "update:downloaded",
+      "update:error",
+    ];
+
+    channels.forEach((channel) => {
+      ipcRenderer.on(channel, (_, data) => {
+        callback(channel, data);
+      });
+    });
+  },
+});

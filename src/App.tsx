@@ -31,6 +31,8 @@ import { useTheme } from "./hooks/useTheme";
 
 import { MINI_PLAYER_HEIGHT } from "./constants/layout";
 
+import { useUpdater } from "./hooks/useUpdater";
+
 export default function App() {
   const login = useAuthStore((s) => s.login);
   const authenticated = useAuthStore((s) => s.authenticated);
@@ -39,12 +41,10 @@ export default function App() {
 
   const [checkingAuth, setCheckingAuth] = useState(true);
 
+  useUpdater();
   useDiscordRPC();
-
   useKeyboardShortcuts();
-
   useMediaKeys();
-
   useTheme();
 
   function renderPage() {

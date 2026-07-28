@@ -26,8 +26,6 @@ export default function Home() {
 
   const [greeting, setGreeting] = useState("");
 
-  console.log(usePlayerStore.getState().history);
-
   async function playHistorySong(song: Song) {
     try {
       const client = new NavidromeClient(server, username, password);

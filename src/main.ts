@@ -8,6 +8,8 @@ import {
   stopDiscordRPC,
 } from "./main/discord";
 
+import { autoUpdater } from "electron-updater";
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();
@@ -55,6 +57,10 @@ app.on("ready", () => {
   createWindow();
 
   startDiscordRPC();
+
+  if (app.isPackaged) {
+    autoUpdater.checkForUpdatesAndNotify();
+  }
 });
 
 app.on("before-quit", () => {

@@ -26,6 +26,19 @@ const config: ForgeConfig = {
     appCategoryType: "public.app-category.music",
   },
 
+  publishers: [
+    {
+      name: "@electron-forge/publisher-github",
+      config: {
+        repository: {
+          owner: "YOUR_GITHUB_USERNAME",
+          name: "YOUR_REPO_NAME",
+        },
+        prerelease: false,
+      },
+    },
+  ],
+
   rebuildConfig: {},
 
   makers: [
