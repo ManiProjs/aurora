@@ -8,11 +8,11 @@ export default function Toggle({ value, onChange }: Props) {
     <button
       onClick={() => onChange(!value)}
       className={`
-        h-6
-        w-11
+        h-7
+        w-12
         rounded-full
         transition
-        ${value ? "bg-white" : "bg-zinc-600"}
+        ${value ? "bg-white" : "bg-zinc-700"}
       `}
     >
       <div
@@ -22,7 +22,7 @@ export default function Toggle({ value, onChange }: Props) {
           rounded-full
           bg-black
           transition
-          ${value ? "translate-x-5" : "translate-x-0"}
+          ${value ? "translate-x-6" : "translate-x-1"}
         `}
       />
     </button>

@@ -2,28 +2,45 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface SettingsState {
-  animations: boolean;
-  autoScrollLyrics: boolean;
-  autoplay: boolean;
   discordRPC: boolean;
 
-  setAnimations(value: boolean): void;
-  setAutoScrollLyrics(value: boolean): void;
-  setAutoplay(value: boolean): void;
+  animations: boolean;
+
+  resumePlayback: boolean;
+
+  autoplay: boolean;
+
+  theme: "dark" | "amoled" | "aurora";
+
   setDiscordRPC(value: boolean): void;
 
-  rememberVolume: boolean;
-  setRememberVolume(value: boolean): void;
+  setAnimations(value: boolean): void;
+
+  setResumePlayback(value: boolean): void;
+
+  setAutoplay(value: boolean): void;
+
+  setTheme(value: "dark" | "amoled" | "aurora"): void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
+      discordRPC: true,
+
       animations: true,
-      autoScrollLyrics: true,
-      autoplay: false,
-      discordRPC: false,
-      rememberVolume: true,
+
+      resumePlayback: true,
+
+      autoplay: true,
+
+      theme: "aurora",
+
+      setDiscordRPC(value) {
+        set({
+          discordRPC: value,
+        });
+      },
 
       setAnimations(value) {
         set({
@@ -31,9 +48,9 @@ export const useSettingsStore = create<SettingsState>()(
         });
       },
 
-      setAutoScrollLyrics(value) {
+      setResumePlayback(value) {
         set({
-          autoScrollLyrics: value,
+          resumePlayback: value,
         });
       },
 
@@ -43,15 +60,9 @@ export const useSettingsStore = create<SettingsState>()(
         });
       },
 
-      setDiscordRPC(value) {
+      setTheme(value) {
         set({
-          discordRPC: value,
-        });
-      },
-
-      setRememberVolume(value) {
-        set({
-          rememberVolume: value,
+          theme: value,
         });
       },
     }),

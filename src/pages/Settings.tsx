@@ -1,155 +1,178 @@
-import SettingsSection from "../components/SettingsSection";
 import Toggle from "../components/Toggle";
 
 import { useSettingsStore } from "../stores/settings";
-import { useAuthStore } from "../stores/auth";
 
 export default function Settings() {
   const {
-    animations,
-    autoScrollLyrics,
-    autoplay,
-
-    setAnimations,
-    setAutoScrollLyrics,
-    setAutoplay,
-
     discordRPC,
+    animations,
+    resumePlayback,
+    autoplay,
+    theme,
+
     setDiscordRPC,
+    setAnimations,
+    setResumePlayback,
+    setAutoplay,
+    setTheme,
   } = useSettingsStore();
 
-  const { server, username, logout } = useAuthStore();
-
   return (
-    <div className="space-y-8 p-6">
-      <div>
-        <h1 className="text-3xl font-bold">Settings</h1>
+    <main
+      className="
+        h-full
+        overflow-y-auto
+        p-8
+        aurora-text
+      "
+    >
+      <div className="mx-auto max-w-3xl">
+        <h1 className="text-4xl font-bold">Settings</h1>
 
-        <p className="aurora-text-muted mt-2">Customize Aurora.</p>
+        {/* Appearance */}
+
+        <section className="mt-10">
+          <h2 className="text-xl font-semibold">Appearance</h2>
+
+          <div
+            className="
+              mt-4
+              rounded-3xl
+              aurora-glass
+              p-6
+              space-y-5
+            "
+          >
+            <SettingRow
+              title="Animations"
+              description="Enable interface animations"
+            >
+              <Toggle value={animations} onChange={setAnimations} />
+            </SettingRow>
+
+            <div>
+              <p className="font-medium">Theme</p>
+
+              <select
+                value={theme}
+                onChange={(e) => setTheme(e.target.value as typeof theme)}
+                className="
+                  mt-2
+                  rounded-xl
+                  bg-zinc-900
+                  px-4
+                  py-2
+                "
+              >
+                <option value="aurora">Aurora</option>
+
+                <option value="dark">Dark</option>
+
+                <option value="amoled">AMOLED</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        {/* Playback */}
+
+        <section className="mt-10">
+          <h2 className="text-xl font-semibold">Playback</h2>
+
+          <div
+            className="
+              mt-4
+              rounded-3xl
+              aurora-glass
+              p-6
+              space-y-5
+            "
+          >
+            <SettingRow
+              title="Resume playback"
+              description="Continue where you stopped"
+            >
+              <Toggle value={resumePlayback} onChange={setResumePlayback} />
+            </SettingRow>
+
+            <SettingRow
+              title="Autoplay next song"
+              description="Automatically continue queue"
+            >
+              <Toggle value={autoplay} onChange={setAutoplay} />
+            </SettingRow>
+          </div>
+        </section>
+
+        {/* Integrations */}
+
+        <section className="mt-10">
+          <h2 className="text-xl font-semibold">Integrations</h2>
+
+          <div
+            className="
+              mt-4
+              rounded-3xl
+              aurora-glass
+              p-6
+            "
+          >
+            <SettingRow
+              title="Discord Rich Presence"
+              description="Show currently playing song"
+            >
+              <Toggle value={discordRPC} onChange={setDiscordRPC} />
+            </SettingRow>
+          </div>
+        </section>
+
+        {/* About */}
+
+        <section className="mt-10">
+          <h2 className="text-xl font-semibold">About</h2>
+
+          <div
+            className="
+              mt-4
+              rounded-3xl
+              aurora-glass
+              p-6
+            "
+          >
+            <p className="font-semibold">Aurora</p>
+
+            <p className="text-sm aurora-text-muted">Version 0.1.-alpha2</p>
+          </div>
+        </section>
       </div>
-
-      <SettingsSection title="Account" description="Your Navidrome connection.">
-        <div>
-          <p className="font-medium">Server</p>
-
-          <p className="aurora-text-muted">{server}</p>
-        </div>
-
-        <div>
-          <p className="font-medium">Username</p>
-
-          <p className="aurora-text-muted">{username}</p>
-        </div>
-
-        <button
-          onClick={logout}
-          className="
-            rounded-xl
-            bg-red-500
-            px-4
-            py-2
-            text-white
-          "
-        >
-          Logout
-        </button>
-      </SettingsSection>
-
-      <SettingsSection title="Appearance">
-        <SettingRow
-          title="Animations"
-          description="Enable or disable UI animations."
-          value={animations}
-          onChange={setAnimations}
-        />
-      </SettingsSection>
-
-      <SettingsSection
-        title="Integrations"
-        description="Connect Aurora with other services."
-      >
-        <SettingRow
-          title="Discord Rich Presence"
-          description="Show what you're listening to on Discord."
-          value={discordRPC}
-          onChange={(value) => {
-            setDiscordRPC(value);
-
-            if (value) {
-              window.discord?.start();
-            } else {
-              window.discord?.stop();
-            }
-          }}
-        />
-      </SettingsSection>
-
-      <SettingsSection title="Lyrics">
-        <SettingRow
-          title="Auto-scroll lyrics"
-          description="Automatically scroll lyrics as the song plays."
-          value={autoScrollLyrics}
-          onChange={setAutoScrollLyrics}
-        />
-      </SettingsSection>
-
-      <SettingsSection title="Playback">
-        <SettingRow
-          title="Autoplay"
-          description="Automatically play the next song when the current one ends."
-          value={autoplay}
-          onChange={setAutoplay}
-        />
-      </SettingsSection>
-
-      <SettingsSection title="About">
-        <p>Aurora v0.1.0-alpha.2</p>
-
-        <p className="aurora-text-muted">
-          A beautiful and animation-heavy Navidrome desktop client.
-        </p>
-      </SettingsSection>
-    </div>
+    </main>
   );
 }
 
 function SettingRow({
   title,
   description,
-  value,
-  onChange,
+  children,
 }: {
   title: string;
-  description?: string;
-  value: boolean;
-  onChange(value: boolean): void;
+  description: string;
+  children: React.ReactNode;
 }) {
   return (
     <div
       className="
-      flex
-      items-center
-      justify-between
-      gap-4
-    "
+        flex
+        items-center
+        justify-between
+      "
     >
       <div>
         <p className="font-medium">{title}</p>
 
-        {description && (
-          <p
-            className="
-            aurora-text-muted
-            mt-1
-            text-sm
-          "
-          >
-            {description}
-          </p>
-        )}
+        <p className="text-sm aurora-text-muted">{description}</p>
       </div>
 
-      <Toggle value={value} onChange={onChange} />
+      {children}
     </div>
   );
 }
