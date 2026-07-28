@@ -31,8 +31,8 @@ const config: ForgeConfig = {
       name: "@electron-forge/publisher-github",
       config: {
         repository: {
-          owner: "YOUR_GITHUB_USERNAME",
-          name: "YOUR_REPO_NAME",
+          owner: "ManiProjs",
+          name: "aurora",
         },
         prerelease: false,
       },
