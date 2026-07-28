@@ -14,6 +14,8 @@ import Slider from "./Slider";
 
 import { usePlayerStore } from "../stores/player";
 
+import { useNavigationStore } from "../stores/navigation";
+
 function formatTime(seconds: number) {
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
@@ -43,6 +45,8 @@ export default function MiniPlayer(): ReactElement | null {
 
   const openFullPlayer = usePlayerStore((s) => s.openFullPlayer);
 
+  const setPage = useNavigationStore((s) => s.setPage);
+
   if (!song) {
     return null;
   }
@@ -69,7 +73,6 @@ export default function MiniPlayer(): ReactElement | null {
         stiffness: 180,
         damping: 20,
       }}
-      onDoubleClick={openFullPlayer}
       className="
         aurora-glass
         fixed
@@ -169,14 +172,42 @@ export default function MiniPlayer(): ReactElement | null {
 
           <p
             className="
-              aurora-text-muted
-              truncate
-              text-sm
-            "
+    aurora-text-muted
+    truncate
+    text-sm
+  "
           >
-            {song.artist}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setPage("artist");
+              }}
+              className="
+      transition
+      hover:text-white
+    "
+            >
+              {song.artist}
+            </button>
 
-            {song.album && ` • ${song.album}`}
+            {song.album && (
+              <>
+                {" • "}
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPage("album");
+                  }}
+                  className="
+          transition
+          hover:text-white
+        "
+                >
+                  {song.album}
+                </button>
+              </>
+            )}
           </p>
         </div>
       </div>
