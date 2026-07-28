@@ -27,6 +27,7 @@ import StartupScreen from "./components/StartupScreen";
 import { useDiscordRPC } from "./hooks/useDiscordRPC";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useMediaKeys } from "./hooks/useMediaKeys";
+import { useTheme } from "./hooks/useTheme";
 
 import { MINI_PLAYER_HEIGHT } from "./constants/layout";
 
@@ -43,6 +44,8 @@ export default function App() {
   useKeyboardShortcuts();
 
   useMediaKeys();
+
+  useTheme();
 
   function renderPage() {
     switch (page) {
