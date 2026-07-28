@@ -54,26 +54,36 @@ export default function MiniPlayer(): ReactElement | null {
   return (
     <motion.div
       initial={{
-        y: 100,
+        y: 120,
+        opacity: 0,
       }}
       animate={{
         y: 0,
+        opacity: 1,
       }}
+      whileHover={{
+        y: -4,
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 180,
+        damping: 20,
+      }}
+      onDoubleClick={openFullPlayer}
       className="
-  aurora-glass
-  fixed
-  bottom-4
-  left-4
-  right-4
-  z-40
-  flex
-  h-24
-  items-center
-  gap-6
-  rounded-3xl
-  p-4
-"
-      onClick={openFullPlayer}
+        aurora-glass
+        fixed
+        bottom-4
+        left-4
+        right-4
+        z-40
+        flex
+        h-24
+        items-center
+        gap-6
+        rounded-3xl
+        p-4
+      "
     >
       {/* Artwork + info */}
 
@@ -87,17 +97,47 @@ export default function MiniPlayer(): ReactElement | null {
         "
       >
         {album?.coverArt ? (
-          <img
-            src={album.coverArt}
-            alt={album.name}
-            className="
-              h-14
-              w-14
-              rounded-2xl
-              object-cover
-              shadow-lg
-            "
-          />
+          <div className="relative cursor-pointer" onClick={openFullPlayer}>
+            <div
+              className="
+                h-14
+                w-14
+                overflow-hidden
+                rounded-2xl
+                shadow-lg
+              "
+            >
+              <img
+                src={album.coverArt}
+                alt={album.name}
+                className="
+                  h-full
+                  w-full
+                  object-cover
+                "
+              />
+            </div>
+
+            {playing && (
+              <motion.div
+                animate={{
+                  opacity: [0.4, 0.8, 0.4],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                }}
+                className="
+                  pointer-events-none
+                  absolute
+                  inset-0
+                  rounded-2xl
+                  ring-2
+                  ring-white/40
+                "
+              />
+            )}
+          </div>
         ) : (
           <div
             className="
@@ -108,6 +148,7 @@ export default function MiniPlayer(): ReactElement | null {
               justify-center
               rounded-2xl
               bg-zinc-200
+              shadow-lg
               dark:bg-zinc-800
             "
           >
@@ -115,11 +156,7 @@ export default function MiniPlayer(): ReactElement | null {
           </div>
         )}
 
-        <div
-          className="
-            min-w-0
-          "
-        >
+        <div className="min-w-0">
           <p
             className="
               aurora-text
@@ -138,6 +175,7 @@ export default function MiniPlayer(): ReactElement | null {
             "
           >
             {song.artist}
+
             {song.album && ` • ${song.album}`}
           </p>
         </div>
@@ -159,6 +197,8 @@ export default function MiniPlayer(): ReactElement | null {
             aurora-button
             rounded-full
             p-2
+            transition
+            hover:scale-110
           "
         >
           <SkipBack size={20} />
@@ -167,6 +207,9 @@ export default function MiniPlayer(): ReactElement | null {
         <motion.button
           whileTap={{
             scale: 0.9,
+          }}
+          whileHover={{
+            scale: 1.08,
           }}
           onClick={playing ? pause : resume}
           className="
@@ -196,6 +239,8 @@ export default function MiniPlayer(): ReactElement | null {
             aurora-button
             rounded-full
             p-2
+            transition
+            hover:scale-110
           "
         >
           <SkipForward size={20} />

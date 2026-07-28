@@ -127,10 +127,16 @@ export const usePlayerStore = create<PlayerState>()(
           current: first,
           currentIndex: first ? 0 : -1,
           album,
+
           playing: Boolean(first),
+
           progress: 0,
           duration: first?.duration ?? 0,
         });
+
+        if (first) {
+          get().addToHistory(first);
+        }
       },
 
       playSong(index) {
@@ -143,10 +149,14 @@ export const usePlayerStore = create<PlayerState>()(
         set({
           current: song,
           currentIndex: index,
+
           playing: true,
+
           progress: 0,
           duration: song.duration ?? 0,
         });
+
+        get().addToHistory(song);
       },
 
       reorderQueue(queue) {
@@ -154,6 +164,7 @@ export const usePlayerStore = create<PlayerState>()(
 
         set({
           queue,
+
           currentIndex: current
             ? queue.findIndex((song) => song.id === current.id)
             : -1,
@@ -190,10 +201,14 @@ export const usePlayerStore = create<PlayerState>()(
 
         const song = queue[nextIndex];
 
+        get().addToHistory(song);
+
         set({
           current: song,
           currentIndex: nextIndex,
+
           playing: true,
+
           progress: 0,
           duration: song.duration ?? 0,
         });
@@ -210,10 +225,14 @@ export const usePlayerStore = create<PlayerState>()(
 
         const song = queue[index];
 
+        get().addToHistory(song);
+
         set({
           current: song,
           currentIndex: index,
+
           playing: true,
+
           progress: 0,
           duration: song.duration ?? 0,
         });
@@ -226,6 +245,7 @@ export const usePlayerStore = create<PlayerState>()(
 
         set({
           queue,
+
           currentIndex: current
             ? queue.findIndex((song) => song.id === current.id)
             : -1,
@@ -235,9 +255,12 @@ export const usePlayerStore = create<PlayerState>()(
       clearQueue() {
         set({
           queue: [],
+
           current: null,
           currentIndex: -1,
+
           playing: false,
+
           progress: 0,
         });
       },
@@ -257,10 +280,14 @@ export const usePlayerStore = create<PlayerState>()(
       stop() {
         set((state) => ({
           current: null,
+
           playing: false,
+
           progress: 0,
           duration: 0,
+
           seekPosition: null,
+
           stopVersion: state.stopVersion + 1,
         }));
       },
@@ -330,6 +357,7 @@ export const usePlayerStore = create<PlayerState>()(
       partialize(state) {
         return {
           queue: state.queue,
+
           current: state.current,
           currentIndex: state.currentIndex,
 
