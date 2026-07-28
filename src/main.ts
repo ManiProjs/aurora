@@ -94,14 +94,49 @@ ipcMain.handle("auth:clear", async () => {
   await clearAuth();
 });
 
-ipcMain.on("discord:update", (_, data) => {
-  updateDiscordRPC(data);
+ipcMain.handle("discord:start", async () => {
+  try {
+    await startDiscordRPC();
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error("Discord RPC unavailable:", error);
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
 });
 
-ipcMain.on("discord:start", () => {
-  startDiscordRPC();
+ipcMain.handle("discord:stop", async () => {
+  try {
+    await stopDiscordRPC();
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+    };
+  }
 });
 
-ipcMain.on("discord:stop", () => {
-  stopDiscordRPC();
+ipcMain.handle("discord:update", async (_, data) => {
+  try {
+    await updateDiscordRPC(data);
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error("Discord update failed:", error);
+
+    return {
+      success: false,
+    };
+  }
 });

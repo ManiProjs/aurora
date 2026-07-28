@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useAuthStore } from "./stores/auth";
 import { useNavigationStore } from "./stores/navigation";
 import { useSearchStore } from "./stores/search";
+import { MINI_PLAYER_HEIGHT } from "./constants/layout";
 
 import Login from "./pages/Login";
 import Home from "./pages/Home";
@@ -143,12 +144,14 @@ export default function App() {
         <SearchOverlay />
 
         <main
+          style={{
+            paddingBottom: MINI_PLAYER_HEIGHT,
+          }}
           className="
-          aurora-scrollbar
-          flex-1
-          overflow-y-auto
-          pb-24
-        "
+    aurora-scrollbar
+    flex-1
+    overflow-y-auto
+  "
         >
           <AnimatePresence mode="wait">
             <motion.div

@@ -26,9 +26,9 @@ const auroraApi = {
 contextBridge.exposeInMainWorld("aurora", auroraApi);
 
 contextBridge.exposeInMainWorld("discord", {
-  update: (data: unknown) => ipcRenderer.send("discord:update", data),
+  start: () => ipcRenderer.invoke("discord:start"),
 
-  start: () => ipcRenderer.send("discord:start"),
+  stop: () => ipcRenderer.invoke("discord:stop"),
 
-  stop: () => ipcRenderer.send("discord:stop"),
+  update: (data: unknown) => ipcRenderer.invoke("discord:update", data),
 });

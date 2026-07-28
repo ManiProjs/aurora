@@ -60,19 +60,19 @@ export default function MiniPlayer(): ReactElement | null {
         y: 0,
       }}
       className="
-        aurora-glass
-        fixed
-        bottom-4
-        left-4
-        right-4
-        z-40
-        flex
-        items-center
-        gap-6
-        rounded-3xl
-        p-4
-        shadow-2xl
-      "
+  aurora-glass
+  fixed
+  bottom-4
+  left-4
+  right-4
+  z-40
+  flex
+  h-24
+  items-center
+  gap-6
+  rounded-3xl
+  p-4
+"
       onClick={openFullPlayer}
     >
       {/* Artwork + info */}
