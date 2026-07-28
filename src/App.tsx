@@ -4,7 +4,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useAuthStore } from "./stores/auth";
 import { useNavigationStore } from "./stores/navigation";
 import { useSearchStore } from "./stores/search";
-import { MINI_PLAYER_HEIGHT } from "./constants/layout";
 
 import Login from "./pages/Login";
 import Home from "./pages/Home";
@@ -21,10 +20,14 @@ import SearchOverlay from "./components/SearchOverlay";
 import AudioEngine from "./components/AudioEngine";
 import MiniPlayer from "./components/MiniPlayer";
 import FullPlayer from "./components/FullPlayer";
-import { useDiscordRPC } from "./hooks/useDiscordRPC";
-import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import TitleBar from "./components/TitleBar";
 import Notifications from "./components/Notifications";
+import StartupScreen from "./components/StartupScreen";
+
+import { useDiscordRPC } from "./hooks/useDiscordRPC";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+
+import { MINI_PLAYER_HEIGHT } from "./constants/layout";
 
 export default function App() {
   const login = useAuthStore((s) => s.login);
@@ -68,6 +71,8 @@ export default function App() {
 
   useEffect(() => {
     async function restoreSession() {
+      const start = performance.now();
+
       try {
         const auth = await window.auth.loadAuth();
 
@@ -75,6 +80,13 @@ export default function App() {
           login(auth.server, auth.username, auth.password);
         }
       } finally {
+        const elapsed = performance.now() - start;
+        const remaining = 500 - elapsed;
+
+        if (remaining > 0) {
+          await new Promise((resolve) => setTimeout(resolve, remaining));
+        }
+
         setCheckingAuth(false);
       }
     }
@@ -98,91 +110,112 @@ export default function App() {
     };
   }, []);
 
-  if (checkingAuth) {
-    return (
-      <div
-        className="
-          aurora-background
-          aurora-text
-          flex
-          h-screen
-          items-center
-          justify-center
-        "
-      >
-        Loading...
-      </div>
-    );
-  }
-
-  if (!authenticated) {
-    return <Login />;
-  }
-
   return (
-    <div
-      className="
-      aurora-background
-      aurora-text
-      relative
-      h-screen
-      overflow-hidden
-    "
-    >
-      <Notifications />
-      <TitleBar />
-
-      <div
-        className="
-        flex
-        h-full
-        pt-10
-      "
-      >
-        <Sidebar />
-
-        <SearchOverlay />
-
-        <main
-          style={{
-            paddingBottom: MINI_PLAYER_HEIGHT,
+    <AnimatePresence mode="wait">
+      {checkingAuth ? (
+        <motion.div
+          key="startup"
+          exit={{
+            opacity: 0,
+            scale: 1.05,
+          }}
+          transition={{
+            duration: 0.4,
+          }}
+        >
+          <StartupScreen />
+        </motion.div>
+      ) : !authenticated ? (
+        <motion.div
+          key="login"
+          initial={{
+            opacity: 0,
+          }}
+          animate={{
+            opacity: 1,
+          }}
+        >
+          <Login />
+        </motion.div>
+      ) : (
+        <motion.div
+          key="app"
+          initial={{
+            opacity: 0,
+          }}
+          animate={{
+            opacity: 1,
+          }}
+          transition={{
+            duration: 0.4,
           }}
           className="
-    aurora-scrollbar
-    flex-1
-    overflow-y-auto
-  "
+            aurora-background
+            aurora-text
+            flex
+            h-screen
+            flex-col
+            overflow-hidden
+          "
         >
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={page}
-              initial={{
-                opacity: 0,
-                y: 16,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              exit={{
-                opacity: 0,
-                y: -16,
-              }}
-              transition={{
-                duration: 0.22,
-                ease: "easeOut",
-              }}
-              className="h-full"
-            >
-              {renderPage()}
-            </motion.div>
-          </AnimatePresence>
-        </main>
-      </div>
+          <TitleBar />
 
-      <AudioEngine />
-      <MiniPlayer />
-      <FullPlayer />
-    </div>
+          <div
+            className="
+              flex
+              min-h-0
+              flex-1
+            "
+            style={{
+              paddingBottom: MINI_PLAYER_HEIGHT,
+            }}
+          >
+            <Sidebar />
+
+            <main
+              className="
+                aurora-scrollbar
+                flex-1
+                overflow-y-auto
+              "
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={page}
+                  initial={{
+                    opacity: 0,
+                    y: 16,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  exit={{
+                    opacity: 0,
+                    y: -16,
+                  }}
+                  transition={{
+                    duration: 0.22,
+                  }}
+                  className="h-full"
+                >
+                  {renderPage()}
+                </motion.div>
+              </AnimatePresence>
+            </main>
+          </div>
+
+          <SearchOverlay />
+
+          <AudioEngine />
+
+          <MiniPlayer />
+
+          <FullPlayer />
+
+          <Notifications />
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
