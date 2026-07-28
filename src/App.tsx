@@ -23,6 +23,7 @@ import FullPlayer from "./components/FullPlayer";
 import { useDiscordRPC } from "./hooks/useDiscordRPC";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import TitleBar from "./components/TitleBar";
+import Notifications from "./components/Notifications";
 
 export default function App() {
   const login = useAuthStore((s) => s.login);
@@ -127,6 +128,7 @@ export default function App() {
       overflow-hidden
     "
     >
+      <Notifications />
       <TitleBar />
 
       <div
