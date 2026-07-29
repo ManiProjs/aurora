@@ -27,24 +27,26 @@ export default function AlbumPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!album) return;
+    if (!album) {
+      return;
+    }
+    const controller = new AbortController();
+
+    const client = new NavidromeClient(server, username, password);
+
+    client.setSignal(controller.signal);
 
     async function loadAlbum() {
-      try {
-        const client = new NavidromeClient(server, username, password);
-
-        const result = await client.getAlbum(album.id);
-
-        setSongs(result);
-      } catch (error) {
-        console.error("Failed loading album:", error);
-      } finally {
-        setLoading(false);
-      }
+      const songs = await client.getAlbum(album.id);
+      setSongs(songs);
     }
 
     loadAlbum();
-  }, [album, server, username, password]);
+
+    return () => {
+      controller.abort();
+    };
+  }, [album?.id]);
 
   const artwork = album?.coverArt
     ? getCoverArtUrl(server, username, password, album.coverArt)

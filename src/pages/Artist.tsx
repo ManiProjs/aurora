@@ -29,25 +29,43 @@ export default function ArtistPage() {
   useEffect(() => {
     if (!artist) return;
 
+    const controller = new AbortController();
+
     async function load() {
       try {
         const client = new NavidromeClient(server, username, password);
 
+        client.setSignal(controller.signal);
+
         const result = await client.getArtist(artist.id);
+
+        if (controller.signal.aborted) return;
 
         setAlbums(result.album ?? []);
 
         const artistSongs = await client.getSongsByArtist(artist.id);
 
+        if (controller.signal.aborted) return;
+
         setSongs(artistSongs);
       } catch (error) {
+        if (controller.signal.aborted) {
+          return;
+        }
+
         console.error("Failed loading artist:", error);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     }
 
     load();
+
+    return () => {
+      controller.abort();
+    };
   }, [artist, server, username, password]);
 
   if (!artist) {

@@ -1,4 +1,4 @@
-import axios from "axios";
+import { api } from "./client";
 import type { Album, Song, Artist } from "./types";
 
 interface SubsonicResponse<T> {
@@ -12,23 +12,19 @@ interface SubsonicResponse<T> {
   [key: string]: unknown;
 }
 
-interface SearchResult3 {
-  song?: Song[];
-  album?: Album[];
-  artist?: {
-    id: string;
-    name: string;
-    albumCount?: number;
-  }[];
-}
-
 export class NavidromeClient {
+  private signal?: AbortSignal;
+
   constructor(
     private baseUrl: string,
     private username: string,
     private password: string,
   ) {
     this.baseUrl = baseUrl.replace(/\/$/, "");
+  }
+
+  setSignal(signal: AbortSignal) {
+    this.signal = signal;
   }
 
   private async request<T>(
@@ -38,9 +34,9 @@ export class NavidromeClient {
     const url = `${this.baseUrl}/rest/${endpoint}`;
 
     try {
-      const { data } = await axios.get<{
-        "subsonic-response": SubsonicResponse<T>;
-      }>(url, {
+      const { data } = await api.get(url, {
+        signal: this.signal,
+
         params: {
           u: this.username,
           p: this.password,
@@ -59,16 +55,22 @@ export class NavidromeClient {
 
       return response as unknown as T;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Navidrome request failed:", {
-          url,
-          params,
-          status: error.response?.status,
-          data: error.response?.data,
-        });
-      } else {
-        console.error(error);
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw error;
       }
+
+      if (error && typeof error === "object" && "code" in error) {
+        if (error.code === "ERR_CANCELED") {
+          console.log("Navidrome request cancelled");
+          throw error;
+        }
+      }
+
+      console.error("Navidrome request failed:", {
+        url,
+        params,
+        error,
+      });
 
       throw error;
     }
@@ -88,7 +90,7 @@ export class NavidromeClient {
       size: "50",
     });
 
-    return response.albumList2.album;
+    return response.albumList2.album ?? [];
   }
 
   async getAlbum(id: string): Promise<Song[]> {
@@ -145,7 +147,7 @@ export class NavidromeClient {
       };
     }>("getArtists");
 
-    return response.artists.index.flatMap((item) => item.artist);
+    return response.artists.index.flatMap((item) => item.artist ?? []);
   }
 
   async getArtist(id: string) {
@@ -199,13 +201,11 @@ export class NavidromeClient {
       id: artistId,
     });
 
-    const coverArt = response.artist.coverArt;
-
-    if (!coverArt) {
+    if (!response.artist.coverArt) {
       return null;
     }
 
-    return this.getCoverArtUrl(coverArt);
+    return this.getCoverArtUrl(response.artist.coverArt);
   }
 
   async getSongs(): Promise<Song[]> {

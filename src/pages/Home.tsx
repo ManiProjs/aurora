@@ -72,11 +72,19 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const controller = new AbortController();
+
+    const client = new NavidromeClient(server, username, password);
+
+    client.setSignal(controller.signal);
+
     async function loadAlbums() {
       try {
-        const client = new NavidromeClient(server, username, password);
-
         const data = await client.getAlbums();
+
+        if (controller.signal.aborted) {
+          return;
+        }
 
         setAlbums(data);
 
@@ -84,13 +92,23 @@ export default function Home() {
           setFeatured(data[Math.floor(Math.random() * data.length)]);
         }
       } catch (error) {
-        console.error("Failed loading albums:", error);
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        console.error("Failed to load albums:", error);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     }
 
     loadAlbums();
+
+    return () => {
+      controller.abort();
+    };
   }, [server, username, password]);
 
   useEffect(() => {

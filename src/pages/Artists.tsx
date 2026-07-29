@@ -17,7 +17,7 @@ export default function Artists() {
   async function loadImages(
     data: Artist[],
     client: NavidromeClient,
-    cancelled: { value: boolean },
+    cancelled: AbortSignal,
   ) {
     const queue = [...data];
 
@@ -25,14 +25,14 @@ export default function Artists() {
       while (queue.length > 0) {
         const artist = queue.shift();
 
-        if (!artist || cancelled.value) {
+        if (!artist || cancelled.aborted) {
           return;
         }
 
         try {
           const imageUrl = await client.getArtistImage(artist.id);
 
-          if (cancelled.value) {
+          if (cancelled.aborted) {
             return;
           }
 
@@ -56,17 +56,17 @@ export default function Artists() {
   }
 
   useEffect(() => {
-    const cancelled = {
-      value: false,
-    };
+    const controller = new AbortController();
 
     async function loadArtists() {
       try {
         const client = new NavidromeClient(server, username, password);
 
+        client.setSignal(controller.signal);
+
         const data = await client.getArtists();
 
-        if (cancelled.value) {
+        if (controller.signal.aborted) {
           return;
         }
 
@@ -75,20 +75,21 @@ export default function Artists() {
         setLoading(false);
 
         // Load images separately
-        loadImages(data, client, cancelled);
+        loadImages(data, client, controller.signal);
       } catch (error) {
-        console.error("Failed to load artists:", error);
-
-        if (!cancelled.value) {
-          setLoading(false);
+        if (controller.signal.aborted) {
+          return;
         }
+
+        console.error("Failed to load artists:", error);
+        setLoading(false);
       }
     }
 
     loadArtists();
 
     return () => {
-      cancelled.value = true;
+      controller.abort();
     };
   }, [server, username, password]);
 
