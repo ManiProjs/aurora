@@ -1,4 +1,5 @@
 import Toggle from "../components/Toggle";
+import CodeEditor from "../components/CodeEditor";
 
 import { useSettingsStore } from "../stores/settings";
 import { useAuthStore } from "../stores/auth";
@@ -84,25 +85,7 @@ export default function Settings() {
                 Override Aurora styling with your own CSS
               </p>
 
-              <textarea
-                value={customCSS}
-                onChange={(e) => setCustomCSS(e.target.value)}
-                placeholder={`/* Example */
-
-.aurora-card {
-  border-radius: 10px;
-}`}
-                className="
-                  mt-3
-                  h-48
-                  w-full
-                  rounded-xl
-                  aurora-input
-                  resize-none
-                  font-mono
-                  text-sm
-                "
-              />
+              <CodeEditor value={customCSS} onChange={setCustomCSS} />
             </div>
           </div>
         </section>
