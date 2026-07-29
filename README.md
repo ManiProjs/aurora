@@ -2,16 +2,16 @@
 
 <div align="center">
 
-### A beautiful, modern desktop client for Navidrome.
+## A beautiful, modern desktop client for Navidrome
 
 Built with Electron, React, TypeScript, Tailwind CSS, and Framer Motion.
 
-> ⚠️ Aurora is currently in **beta**. Expect bugs, missing features, and breaking changes between releases.
+> ⚠️ Aurora is currently in **beta**. Features may change, bugs may exist, and breaking changes can happen between releases.
 
 [Features](#features) •
-[Screenshots](#screenshots) •
+[Customization](#customization) •
 [Installation](#installation) •
-[Building](#building) •
+[Development](#development) •
 [Roadmap](#roadmap)
 
 </div>
@@ -20,86 +20,150 @@ Built with Electron, React, TypeScript, Tailwind CSS, and Framer Motion.
 
 ## ✨ About
 
-Aurora is a modern desktop music player built exclusively for **Navidrome**.
+Aurora is a modern desktop music player built specifically for **Navidrome**.
 
-Rather than wrapping the web interface, Aurora delivers a native-feeling desktop experience with smooth animations, dynamic artwork, synchronized lyrics, queue management, and secure authentication.
+Instead of simply wrapping the Navidrome web interface, Aurora provides a native desktop experience with a beautiful interface, smooth animations, powerful playback controls, and deep customization.
 
-Aurora is designed to be fast, beautiful, and enjoyable to use every day.
+Aurora focuses on making your personal music library feel like a first-class desktop application.
 
 ---
 
-## Features
+# Features
 
-### 🎵 Playback
+## 🎵 Music Playback
 
-- Stream music from your Navidrome server
-- Album, artist and song browsing
-- Queue management
-- Previous / Next controls
-- Seek support
-- Volume control
+- Stream music directly from your Navidrome server
+- Browse albums, artists, and songs
+- Smart queue management
+- Previous / next song controls
+- Seek and volume control
+- Continue listening history
+- Automatic playback continuation
 
-### 🎨 Beautiful UI
+---
 
-- Glassmorphism design
-- Dynamic artwork backgrounds
-- Smooth animations powered by Framer Motion
+## 🎨 Modern Interface
+
+- Glassmorphism-inspired design
+- Dynamic album artwork backgrounds
+- Smooth transitions and animations
 - Responsive layouts
-- Modern desktop interface
+- Native desktop experience
+- Custom themes
+- Custom CSS support
 
-### 📝 Lyrics
+---
 
-- Automatic synchronized lyrics via LRCLIB
+## 📝 Lyrics
+
+- Automatic synchronized lyrics
+- LRCLIB integration
 - Auto-scrolling lyrics
-- Highlight current lyric
-- Click any lyric to seek playback
+- Current lyric highlighting
+- Click lyrics to seek playback
 
-### 🎧 Queue
+---
 
-- Drag-and-drop reordering
-- Remove songs
-- Current song highlighting
-- Smooth transitions
+## 🎧 Queue Management
 
-### 🔒 Secure
+- View current queue
+- Reorder songs
+- Remove tracks
+- Highlight currently playing song
+- Animated queue updates
 
-- System keychain integration
+---
+
+## 🔒 Secure Authentication
+
 - Secure credential storage
-- Passwords are never stored in plain text
+- System keychain integration
+- No plain-text password storage
+- Persistent login sessions
 
 ---
 
-## Screenshots
+## 💬 Integrations
 
-> Coming soon.
+### Discord Rich Presence
+
+Aurora can display your currently playing song on Discord:
+
+- Song title
+- Artist
+- Album information
+- Playback activity
 
 ---
 
-## Installation
+# 🎨 Customization
 
-Download the latest pre-release from GitHub Releases.
+Aurora supports custom themes and CSS customization.
 
-Aurora currently supports:
+You can modify the interface directly from:
+
+```
+Settings → Appearance → Custom CSS
+```
+
+Example:
+
+```css
+.aurora-card {
+  border-radius: 20px;
+  backdrop-filter: blur(30px);
+}
+
+.aurora-button-primary {
+  background: #89b4fa;
+}
+```
+
+Custom CSS allows you to create your own themes, redesign components, and personalize Aurora.
+
+---
+
+# Screenshots
+
+Coming soon.
+
+---
+
+# Installation
+
+Download the latest release from GitHub Releases.
+
+Supported platforms:
 
 - macOS (Apple Silicon)
 - Windows (x64)
 - Linux (x64)
 
-Builds for Windows and Linux are provided through GitHub Actions.
-
 ---
 
-## Building
+# Development
+
+Clone the repository:
 
 ```bash
 git clone https://github.com/ManiProjs/aurora.git
-cd aurora
 
+cd aurora
+```
+
+Install dependencies:
+
+```bash
 npm install
+```
+
+Start the development build:
+
+```bash
 npm run start
 ```
 
-Build a production package:
+Create a production build:
 
 ```bash
 npm run make
@@ -107,7 +171,13 @@ npm run make
 
 ---
 
-## Tech Stack
+# Documentation
+
+- [Custom CSS](/docs/custom-css.md)
+
+# Tech Stack
+
+Aurora is built using:
 
 - Electron
 - Electron Forge
@@ -116,32 +186,42 @@ npm run make
 - Vite
 - Tailwind CSS
 - Framer Motion
+- Zustand
 - Lucide Icons
-- LRCLIB API
 - Navidrome API
+- LRCLIB API
 
 ---
 
-## Roadmap
+# Roadmap
 
-### Upcoming
+## Planned Features
 
 - Playlist management
-- Theme customization
+- More theme presets
+- Advanced custom CSS editor
+- More customization options
+- Improved library browsing
+- More integrations
 
 ---
 
-## Contributing
+# Contributing
 
-Contributions, bug reports and feature requests are welcome.
+Contributions, bug reports, and feature requests are welcome.
 
-If you'd like to contribute, feel free to open an issue or submit a pull request.
+You can help by:
+
+- Reporting bugs
+- Suggesting features
+- Improving documentation
+- Opening pull requests
 
 ---
 
-## License
+# License
 
-MIT License.
+Aurora is released under the MIT License.
 
 ---
 
@@ -149,6 +229,6 @@ MIT License.
 
 Made with ❤️ by **Mani Arasteh**
 
-If Aurora makes your music experience better, consider giving the repository a ⭐.
+If Aurora improves your music experience, consider giving the repository a ⭐.
 
 </div>
