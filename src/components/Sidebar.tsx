@@ -9,32 +9,44 @@ import {
 } from "lucide-react";
 
 import { motion } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
 
 import { useNavigationStore } from "../stores/navigation";
 import { useAuthStore } from "../stores/auth";
 import { useSearchStore } from "../stores/search";
 
-const items = [
+interface SidebarItem {
+  name: string;
+  icon: LucideIcon;
+  page?: string;
+  action?: () => void;
+}
+
+const items: SidebarItem[] = [
   {
     name: "Home",
     icon: Home,
     page: "home",
   },
+
   {
     name: "Albums",
     icon: Disc3,
     page: "albums",
   },
+
   {
     name: "Artists",
     icon: Mic2,
     page: "artists",
   },
+
   {
     name: "Songs",
     icon: Music2,
     page: "songs",
   },
+
   {
     name: "Search",
     icon: Search,
@@ -42,6 +54,7 @@ const items = [
       useSearchStore.getState().setOpen(true);
     },
   },
+
   {
     name: "Settings",
     icon: Settings,
@@ -58,25 +71,55 @@ export default function Sidebar() {
 
   const logout = useAuthStore((s) => s.logout);
 
+  const shortcut = navigator.platform.toLowerCase().includes("mac")
+    ? "⌘K"
+    : "Ctrl K";
+
   return (
-    <aside
+    <motion.aside
+      initial={{
+        x: -30,
+        opacity: 0,
+      }}
+
+      animate={{
+        x: 0,
+        opacity: 1,
+      }}
+
+      transition={{
+        duration: 0.35,
+      }}
+
       className="
         flex
         h-screen
         w-72
-        pb-28
         flex-col
         border-r
-        border-white/10
-        bg-zinc-950/80
+        aurora-border
+        aurora-background
         p-5
-        text-white
-        backdrop-blur-xl
+        aurora-text
       "
     >
       {/* Logo */}
 
-      <div
+      <motion.div
+        initial={{
+          opacity: 0,
+          y: -10,
+        }}
+
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+
+        transition={{
+          delay: 0.1,
+        }}
+
         className="
           mb-10
           flex
@@ -92,8 +135,7 @@ export default function Sidebar() {
             items-center
             justify-center
             rounded-2xl
-            bg-white
-            text-black
+            aurora-button-primary
             text-xl
             font-bold
           "
@@ -104,16 +146,9 @@ export default function Sidebar() {
         <div>
           <h1 className="text-xl font-bold">Aurora</h1>
 
-          <p
-            className="
-              text-xs
-              text-zinc-500
-            "
-          >
-            Music player
-          </p>
+          <p className="text-xs aurora-text-muted">Music player</p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Navigation */}
 
@@ -126,46 +161,69 @@ export default function Sidebar() {
           return (
             <motion.button
               key={item.name}
+
+              whileHover={{
+                x: 4,
+              }}
+
+              whileTap={{
+                scale: 0.97,
+              }}
+
               onClick={() => {
                 if (item.action) {
                   item.action();
-                } else {
-                  setPage(item.page as any);
+
+                  return;
+                }
+
+                if (item.page) {
+                  setPage(item.page as never);
                 }
               }}
+
               className="
-        relative
-        flex
-        w-full
-        items-center
-        gap-3
-        rounded-xl
-        px-4
-        py-3
-        text-left
-        transition
-        text-zinc-400
-        hover:text-white
-      "
+                relative
+                flex
+                w-full
+                items-center
+                gap-3
+                rounded-xl
+                px-4
+                py-3
+                text-left
+                aurora-button
+              "
             >
               {selected && (
                 <motion.div
                   layoutId="sidebar-active"
-                  className="
-            absolute
-            inset-0
-            rounded-xl
-            bg-white/10
-          "
+
                   transition={{
                     type: "spring",
                     stiffness: 350,
                     damping: 30,
                   }}
+
+                  className="
+                    absolute
+                    inset-0
+                    rounded-xl
+                    bg-black/10
+                    dark:bg-white/10
+                  "
                 />
               )}
 
-              <span className="relative z-10 flex items-center gap-3">
+              <span
+                className="
+                  relative
+                  z-10
+                  flex
+                  items-center
+                  gap-3
+                "
+              >
                 <Icon size={20} />
 
                 <span>{item.name}</span>
@@ -174,22 +232,18 @@ export default function Sidebar() {
               {item.action && (
                 <kbd
                   className="
-            relative
-            z-10
-            ml-auto
-            rounded-md
-            border
-            border-white/10
-            bg-white/5
-            px-2
-            py-1
-            text-xs
-            text-zinc-500
-          "
+                    relative
+                    z-10
+                    ml-auto
+                    rounded-md
+                    aurora-border
+                    px-2
+                    py-1
+                    text-xs
+                    aurora-text-muted
+                  "
                 >
-                  {navigator.platform.toLowerCase().includes("mac")
-                    ? "⌘K"
-                    : "Ctrl K"}
+                  {shortcut}
                 </kbd>
               )}
             </motion.button>
@@ -197,38 +251,96 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom user */}
+      {/* Account */}
 
-      <div
+      <motion.div
+        initial={{
+          opacity: 0,
+          y: 20,
+        }}
+
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+
+        transition={{
+          delay: 0.2,
+        }}
+
         className="
           mt-auto
-          rounded-2xl
-          border
-          border-white/10
-          bg-white/5
+          rounded-3xl
+          aurora-glass
           p-4
         "
       >
-        <p
+        <div
           className="
-            truncate
-            font-medium
+            flex
+            items-center
+            gap-3
           "
         >
-          {username}
-        </p>
+          <div
+            className="
+              flex
+              h-10
+              w-10
+              items-center
+              justify-center
+              rounded-full
+              bg-black/10
+              dark:bg-white/10
+              font-bold
+            "
+          >
+            {username?.charAt(0).toUpperCase() ?? "?"}
+          </div>
 
-        <p
-          className="
-            text-sm
-            text-zinc-500
-          "
-        >
-          Connected
-        </p>
+          <div className="min-w-0">
+            <p
+              className="
+                truncate
+                font-medium
+              "
+            >
+              {username}
+            </p>
 
-        <button
+            <div
+              className="
+                flex
+                items-center
+                gap-2
+                text-sm
+                aurora-text-muted
+              "
+            >
+              <span
+                className="
+                  h-2
+                  w-2
+                  rounded-full
+                  bg-green-500
+                "
+              />
+              Connected
+            </div>
+          </div>
+        </div>
+
+        <motion.button
+          whileHover={{
+            scale: 1.02,
+          }}
+
+          whileTap={{
+            scale: 0.97,
+          }}
+
           onClick={logout}
+
           className="
             mt-4
             flex
@@ -238,17 +350,13 @@ export default function Sidebar() {
             rounded-xl
             px-3
             py-2
-            text-sm
-            text-zinc-400
-            transition
-            hover:bg-white/10
-            hover:text-white
+            aurora-button
           "
         >
           <LogOut size={17} />
           Logout
-        </button>
-      </div>
-    </aside>
+        </motion.button>
+      </motion.div>
+    </motion.aside>
   );
 }

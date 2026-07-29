@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+export type Theme = "dark" | "amoled" | "aurora" | "light-aurora";
+
 interface SettingsState {
   discordRPC: boolean;
 
@@ -10,7 +12,9 @@ interface SettingsState {
 
   autoplay: boolean;
 
-  theme: "dark" | "amoled" | "aurora";
+  theme: Theme;
+
+  customCSS: string;
 
   setDiscordRPC(value: boolean): void;
 
@@ -20,7 +24,9 @@ interface SettingsState {
 
   setAutoplay(value: boolean): void;
 
-  setTheme(value: "dark" | "amoled" | "aurora"): void;
+  setTheme(value: Theme): void;
+
+  setCustomCSS(value: string): void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -35,6 +41,8 @@ export const useSettingsStore = create<SettingsState>()(
       autoplay: true,
 
       theme: "aurora",
+
+      customCSS: "",
 
       setDiscordRPC(value) {
         set({
@@ -63,6 +71,12 @@ export const useSettingsStore = create<SettingsState>()(
       setTheme(value) {
         set({
           theme: value,
+        });
+      },
+
+      setCustomCSS(value) {
+        set({
+          customCSS: value,
         });
       },
     }),

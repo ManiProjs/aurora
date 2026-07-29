@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Play } from "lucide-react";
-import { motion } from "framer-motion";
+import { ArrowLeft, Play, Music2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import type { Song } from "../api/types";
 
@@ -10,18 +10,23 @@ import { getCoverArtUrl } from "../api/utils";
 import { useAuthStore } from "../stores/auth";
 import { useNavigationStore } from "../stores/navigation";
 import { usePlayerStore } from "../stores/player";
+import { useSettingsStore } from "../stores/settings";
 
 import { useAlbumColors } from "../hooks/useAlbumColors";
 
 export default function AlbumPage() {
   const album = useNavigationStore((s) => s.selectedAlbum);
+
   const goBack = useNavigationStore((s) => s.goBack);
 
   const { server, username, password } = useAuthStore();
 
   const playQueue = usePlayerStore((s) => s.playQueue);
 
+  const animations = useSettingsStore((s) => s.animations);
+
   const [songs, setSongs] = useState<Song[]>([]);
+
   const [loading, setLoading] = useState(true);
 
   const artwork = album?.coverArt
@@ -41,7 +46,7 @@ export default function AlbumPage() {
 
     client.setSignal(controller.signal);
 
-    async function loadAlbum() {
+    async function load() {
       try {
         setLoading(true);
 
@@ -63,7 +68,7 @@ export default function AlbumPage() {
       }
     }
 
-    loadAlbum();
+    load();
 
     return () => {
       controller.abort();
@@ -74,45 +79,54 @@ export default function AlbumPage() {
     return null;
   }
 
-  function getPlayerAlbum() {
-    return {
-      ...album,
-      coverArt: artwork ?? undefined,
-    };
-  }
+  const playerAlbum = {
+    ...album,
+    coverArt: artwork ?? undefined,
+  };
 
   function playAlbum() {
-    if (songs.length === 0) {
+    if (!songs.length) {
       return;
     }
 
-    playQueue(songs, getPlayerAlbum());
+    playQueue(songs, playerAlbum);
   }
 
   function playSong(index: number) {
     const queue = [...songs.slice(index), ...songs.slice(0, index)];
 
-    playQueue(queue, getPlayerAlbum());
+    playQueue(queue, playerAlbum);
   }
+
+  const motionProps = animations
+    ? {
+        initial: {
+          opacity: 0,
+          y: 20,
+        },
+
+        animate: {
+          opacity: 1,
+          y: 0,
+        },
+      }
+    : {};
 
   return (
     <motion.main
-      initial={{
-        opacity: 0,
-      }}
-      animate={{
-        opacity: 1,
-      }}
+      {...motionProps}
+
       transition={{
-        duration: 0.5,
+        duration: 0.35,
       }}
+
       className="
         relative
         min-h-screen
         overflow-hidden
         p-10
         pb-32
-        text-white
+        aurora-text
       "
     >
       <div
@@ -124,54 +138,49 @@ export default function AlbumPage() {
         "
       >
         <motion.div
-          animate={{
-            background: [
-              `
-              radial-gradient(
-                circle at 20% 20%,
-                ${colors[0]},
-                transparent 55%
-              ),
-              radial-gradient(
-                circle at 80% 30%,
-                ${colors[1]},
-                transparent 60%
-              ),
-              radial-gradient(
-                circle at 50% 90%,
-                ${colors[2]},
-                transparent 55%
-              )
-              `,
-              `
-              radial-gradient(
-                circle at 80% 20%,
-                ${colors[1]},
-                transparent 55%
-              ),
-              radial-gradient(
-                circle at 20% 80%,
-                ${colors[2]},
-                transparent 60%
-              ),
-              radial-gradient(
-                circle at 50% 30%,
-                ${colors[0]},
-                transparent 55%
-              )
-              `,
-            ],
-          }}
+          animate={
+            animations
+              ? {
+                  background: [
+                    `
+                    radial-gradient(
+                      circle at 20% 20%,
+                      ${colors[0]},
+                      transparent 55%
+                    ),
+                    radial-gradient(
+                      circle at 80% 30%,
+                      ${colors[1]},
+                      transparent 60%
+                    )
+                    `,
+                    `
+                    radial-gradient(
+                      circle at 80% 20%,
+                      ${colors[1]},
+                      transparent 55%
+                    ),
+                    radial-gradient(
+                      circle at 20% 80%,
+                      ${colors[2]},
+                      transparent 60%
+                    )
+                    `,
+                  ],
+                }
+              : undefined
+          }
+
           transition={{
             duration: 12,
             repeat: Infinity,
-            ease: "easeInOut",
           }}
+
           className="
             absolute
             -inset-40
             blur-3xl
-            opacity-80
+            opacity-70
           "
         />
 
@@ -179,10 +188,7 @@ export default function AlbumPage() {
           className="
             absolute
             inset-0
-            bg-gradient-to-b
-            from-black/20
-            via-zinc-950/70
-            to-zinc-950
+            bg-black/30
           "
         />
       </div>
@@ -197,20 +203,21 @@ export default function AlbumPage() {
       >
         <motion.button
           onClick={goBack}
-          whileHover={{
-            x: -5,
-          }}
+
+          whileHover={
+            animations
+              ? {
+                  x: -5,
+                }
+              : undefined
+          }
+
           className="
+            aurora-button
             mb-8
             flex
             items-center
             gap-2
-            rounded-xl
-            px-4
-            py-2
-            text-zinc-400
-            hover:bg-white/10
-            hover:text-white
           "
         >
           <ArrowLeft size={20} />
@@ -226,27 +233,25 @@ export default function AlbumPage() {
             md:items-end
           "
         >
-          {artwork && (
+          {artwork ? (
             <motion.img
               src={artwork}
               alt={album.name}
-              initial={{
-                opacity: 0,
-                scale: 0.8,
-                y: 30,
-              }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                y: 0,
-              }}
-              transition={{
-                type: "spring",
-                stiffness: 180,
-              }}
-              whileHover={{
-                scale: 1.04,
-              }}
+
+              {...(animations
+                ? {
+                    initial: {
+                      opacity: 0,
+                      scale: 0.8,
+                    },
+
+                    animate: {
+                      opacity: 1,
+                      scale: 1,
+                    },
+                  }
+                : {})}
+
               className="
                 h-64
                 w-64
@@ -255,10 +260,24 @@ export default function AlbumPage() {
                 shadow-2xl
               "
             />
+          ) : (
+            <div
+              className="
+                flex
+                h-64
+                w-64
+                items-center
+                justify-center
+                rounded-3xl
+                aurora-surface-muted
+              "
+            >
+              <Music2 size={70} />
+            </div>
           )}
 
           <div>
-            <p className="text-zinc-400">Album</p>
+            <p className="aurora-text-muted">Album</p>
 
             <h1
               className="
@@ -270,21 +289,13 @@ export default function AlbumPage() {
               {album.name}
             </h1>
 
-            <p
-              className="
-                mt-3
-                text-xl
-                text-zinc-300
-              "
-            >
-              {album.artist}
-            </p>
+            <p className="mt-3 text-xl">{album.artist}</p>
 
             <p
               className="
                 mt-2
                 text-sm
-                text-zinc-500
+                aurora-text-muted
               "
             >
               {songs.length} songs
@@ -292,32 +303,23 @@ export default function AlbumPage() {
               {album.year ?? "Unknown"}
             </p>
 
-            <motion.button
+            <button
               onClick={playAlbum}
-              disabled={songs.length === 0}
-              whileHover={{
-                scale: songs.length ? 1.08 : 1,
-              }}
-              whileTap={{
-                scale: songs.length ? 0.95 : 1,
-              }}
+
+              disabled={!songs.length}
+
               className="
+                aurora-button-primary
                 mt-6
                 flex
                 items-center
                 gap-3
-                rounded-full
-                bg-white
-                px-8
-                py-3
-                font-bold
-                text-black
                 disabled:opacity-50
               "
             >
               <Play size={20} fill="currentColor" />
               Play album
-            </motion.button>
+            </button>
           </div>
         </section>
 
@@ -328,62 +330,56 @@ export default function AlbumPage() {
           "
         >
           {loading ? (
-            <p className="text-zinc-400">Loading tracks...</p>
-          ) : songs.length === 0 ? (
-            <p className="text-zinc-400">No tracks found.</p>
+            <p className="aurora-text-muted">Loading tracks...</p>
           ) : (
-            songs.map((song, index) => (
-              <motion.button
-                key={song.id}
-                onClick={() => playSong(index)}
-                initial={{
-                  opacity: 0,
-                  y: 20,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                transition={{
-                  delay: index * 0.03,
-                }}
-                whileHover={{
-                  x: 10,
-                  backgroundColor: "rgba(255,255,255,0.08)",
-                }}
-                className="
-                  flex
-                  w-full
-                  items-center
-                  gap-5
-                  rounded-2xl
-                  p-4
-                  text-left
-                "
-              >
-                <span
+            <AnimatePresence>
+              {songs.map((song, index) => (
+                <motion.button
+                  key={song.id}
+
+                  onClick={() => playSong(index)}
+
+                  {...motionProps}
+
+                  transition={{
+                    delay: index * 0.03,
+                  }}
+
                   className="
-                    w-8
-                    text-zinc-500
-                  "
-                >
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-
-                <div>
-                  <p className="font-semibold">{song.title}</p>
-
-                  <p
-                    className="
-                      text-sm
-                      text-zinc-400
+                      aurora-row
+                      flex
+                      w-full
+                      items-center
+                      gap-5
+                      rounded-2xl
+                      p-4
+                      text-left
                     "
+                >
+                  <span
+                    className="
+                        w-8
+                        aurora-text-muted
+                      "
                   >
-                    {song.artist}
-                  </p>
-                </div>
-              </motion.button>
-            ))
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+
+                  <div>
+                    <p className="font-semibold">{song.title}</p>
+
+                    <p
+                      className="
+                          text-sm
+                          aurora-text-muted
+                        "
+                    >
+                      {song.artist}
+                    </p>
+                  </div>
+                </motion.button>
+              ))}
+            </AnimatePresence>
           )}
         </section>
       </div>

@@ -11,7 +11,11 @@
   --aurora-text-muted: #52525b;
 
   --aurora-border: rgba(0, 0, 0, 0.08);
+
+  --aurora-hover: rgba(0, 0, 0, 0.06);
 }
+
+/* Default Aurora */
 
 .theme-aurora {
   --aurora-bg: #09090b;
@@ -22,7 +26,26 @@
   --aurora-text-muted: #a1a1aa;
 
   --aurora-border: rgba(255, 255, 255, 0.1);
+
+  --aurora-hover: rgba(255, 255, 255, 0.1);
 }
+
+/* Light Aurora */
+
+.theme-light-aurora {
+  --aurora-bg: #eef2ff;
+  --aurora-surface: rgba(255, 255, 255, 0.8);
+  --aurora-surface-muted: #e0e7ff;
+
+  --aurora-text: #18181b;
+  --aurora-text-muted: #52525b;
+
+  --aurora-border: rgba(0, 0, 0, 0.08);
+
+  --aurora-hover: rgba(0, 0, 0, 0.06);
+}
+
+/* Pure Dark */
 
 .theme-dark {
   --aurora-bg: #18181b;
@@ -33,7 +56,11 @@
   --aurora-text-muted: #a1a1aa;
 
   --aurora-border: rgba(255, 255, 255, 0.08);
+
+  --aurora-hover: rgba(255, 255, 255, 0.1);
 }
+
+/* AMOLED */
 
 .theme-amoled {
   --aurora-bg: #000000;
@@ -44,6 +71,23 @@
   --aurora-text-muted: #71717a;
 
   --aurora-border: rgba(255, 255, 255, 0.05);
+
+  --aurora-hover: rgba(255, 255, 255, 0.08);
+}
+
+/* ---------- Global Theme Transition ---------- */
+
+html,
+body,
+button,
+input,
+textarea,
+select,
+div {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease;
 }
 
 /* ---------- Legacy Input ---------- */
@@ -127,7 +171,7 @@
 
     border: 1px solid var(--aurora-border);
 
-    background: color-mix(in srgb, var(--aurora-surface) 70%, transparent);
+    background: color-mix(in srgb, var(--aurora-surface) 75%, transparent);
   }
 
   /* Buttons */
@@ -142,7 +186,7 @@
   }
 
   .aurora-button:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--aurora-hover);
 
     color: var(--aurora-text);
   }
@@ -186,7 +230,7 @@
   }
 
   .aurora-row:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--aurora-hover);
   }
 
   /* Sidebar */
@@ -204,13 +248,13 @@
   }
 
   .aurora-sidebar-item:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--aurora-hover);
 
     color: var(--aurora-text);
   }
 
   .aurora-sidebar-item-active {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--aurora-hover);
 
     color: var(--aurora-text);
   }
@@ -219,6 +263,7 @@
 
   .aurora-scrollbar {
     scrollbar-width: thin;
+
     scrollbar-color: rgb(161 161 170 / 0.6) transparent;
   }
 

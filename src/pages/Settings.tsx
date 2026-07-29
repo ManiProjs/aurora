@@ -1,6 +1,7 @@
 import Toggle from "../components/Toggle";
 
 import { useSettingsStore } from "../stores/settings";
+import { useAuthStore } from "../stores/auth";
 
 export default function Settings() {
   const {
@@ -9,13 +10,17 @@ export default function Settings() {
     resumePlayback,
     autoplay,
     theme,
+    customCSS,
 
     setDiscordRPC,
     setAnimations,
     setResumePlayback,
     setAutoplay,
     setTheme,
+    setCustomCSS,
   } = useSettingsStore();
+
+  const { server, username, logout } = useAuthStore();
 
   return (
     <main
@@ -59,17 +64,45 @@ export default function Settings() {
                 className="
                   mt-2
                   rounded-xl
-                  bg-zinc-900
-                  px-4
-                  py-2
+                  aurora-input
                 "
               >
                 <option value="aurora">Aurora</option>
+
+                <option value="light-aurora">Light Aurora</option>
 
                 <option value="dark">Dark</option>
 
                 <option value="amoled">AMOLED</option>
               </select>
+            </div>
+
+            <div>
+              <p className="font-medium">Custom CSS</p>
+
+              <p className="text-sm aurora-text-muted">
+                Override Aurora styling with your own CSS
+              </p>
+
+              <textarea
+                value={customCSS}
+                onChange={(e) => setCustomCSS(e.target.value)}
+                placeholder={`/* Example */
+
+.aurora-card {
+  border-radius: 10px;
+}`}
+                className="
+                  mt-3
+                  h-48
+                  w-full
+                  rounded-xl
+                  aurora-input
+                  resize-none
+                  font-mono
+                  text-sm
+                "
+              />
             </div>
           </div>
         </section>
@@ -126,6 +159,46 @@ export default function Settings() {
           </div>
         </section>
 
+        {/* Accounts */}
+
+        <section className="mt-10">
+          <h2 className="text-xl font-semibold">Accounts</h2>
+
+          <div
+            className="
+              mt-4
+              rounded-3xl
+              aurora-glass
+              p-6
+              space-y-4
+            "
+          >
+            <div>
+              <p className="font-medium">Connected account</p>
+
+              <p className="text-sm aurora-text-muted">{username}</p>
+
+              <p className="text-sm aurora-text-muted">{server}</p>
+            </div>
+
+            <button
+              onClick={logout}
+              className="
+                rounded-xl
+                bg-red-500/10
+                px-5
+                py-3
+                font-semibold
+                text-red-400
+                transition
+                hover:bg-red-500/20
+              "
+            >
+              Log out
+            </button>
+          </div>
+        </section>
+
         {/* About */}
 
         <section className="mt-10">
@@ -164,6 +237,7 @@ function SettingRow({
         flex
         items-center
         justify-between
+        gap-4
       "
     >
       <div>
