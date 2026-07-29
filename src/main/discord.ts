@@ -3,48 +3,35 @@ import RPC from "discord-rpc";
 const CLIENT_ID = "1531259992076718090";
 
 let rpc: RPC.Client | null = null;
+let connected = false;
+let retryTimer: NodeJS.Timeout | null = null;
 
-export function startDiscordRPC(): Promise<boolean> {
-  if (rpc) {
-    return Promise.resolve(true);
+export async function startDiscordRPC(): Promise<boolean> {
+  if (connected && rpc) {
+    return true;
   }
 
+  const client = new RPC.Client({
+    transport: "ipc",
+  });
+
   return new Promise((resolve) => {
-    const client = new RPC.Client({
-      transport: "ipc",
-    });
-
-    rpc = client;
-
-    let settled = false;
-
-    const finish = (value: boolean) => {
-      if (settled) {
-        return;
-      }
-
-      settled = true;
-      resolve(value);
-    };
-
     client.once("ready", () => {
-      console.log("Discord Rich Presence connected");
+      console.log("Discord RPC connected");
 
-      finish(true);
+      rpc = client;
+      connected = true;
+
+      resolve(true);
     });
 
-    client.on("error", (error) => {
+    client.once("error", (error) => {
       console.error("Discord RPC error:", error);
 
       rpc = null;
+      connected = false;
 
-      finish(false);
-    });
-
-    client.on("disconnected", () => {
-      console.log("Discord RPC disconnected");
-
-      rpc = null;
+      resolve(false);
     });
 
     client
@@ -52,57 +39,90 @@ export function startDiscordRPC(): Promise<boolean> {
         clientId: CLIENT_ID,
       })
       .catch((error) => {
-        console.error("Discord RPC unavailable:", error);
+        console.error("Discord RPC login failed:", error);
 
         rpc = null;
+        connected = false;
 
-        finish(false);
+        resolve(false);
       });
   });
 }
 
-export function updateDiscordRPC({
-  title,
-  artist,
-  album,
-  duration,
-}: {
+export function startDiscordRPCRetry() {
+  if (retryTimer) {
+    return;
+  }
+
+  retryTimer = setInterval(async () => {
+    if (connected) {
+      stopDiscordRPCRetry();
+      return;
+    }
+
+    console.log("Retrying Discord RPC...");
+
+    const success = await startDiscordRPC();
+
+    if (success) {
+      stopDiscordRPCRetry();
+    }
+  }, 5000);
+}
+
+export function stopDiscordRPCRetry() {
+  if (!retryTimer) {
+    return;
+  }
+
+  clearInterval(retryTimer);
+  retryTimer = null;
+}
+
+export function updateDiscordRPC(data: {
   title: string;
   artist?: string;
   album?: string;
   duration?: number;
+  isPlaying?: boolean;
 }) {
-  if (!rpc) {
+  if (!rpc || !connected) {
+    console.log("Discord RPC not connected");
     return;
   }
 
-  const now = Date.now();
-
   rpc.setActivity({
-    details: "Listening on Aurora",
+    details:
+      data.isPlaying === false ? "Paused on Aurora" : "Listening on Aurora",
 
-    state: `${artist ?? "Unknown Artist"} • ${title}`,
+    state: `${data.artist ?? "Unknown Artist"} • ${data.title}`,
 
     largeImageKey: "aurora",
 
-    largeImageText: album ?? "Aurora",
+    largeImageText: data.album ?? "Aurora",
 
-    startTimestamp: now,
+    buttons: [
+      {
+        label: data.isPlaying === false ? "Play" : "Pause",
 
-    endTimestamp: duration ? now + duration * 1000 : undefined,
+        url: "https://github.com/ManiProjs/Aurora",
+      },
+    ],
 
     instance: false,
   });
 }
 
 export function stopDiscordRPC() {
+  stopDiscordRPCRetry();
+
   if (!rpc) {
     return;
   }
 
   rpc.clearActivity();
-
   rpc.destroy();
 
   rpc = null;
+  connected = false;
 }

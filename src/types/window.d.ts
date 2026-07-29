@@ -19,16 +19,23 @@ declare global {
     };
 
     discord?: {
+      start(): Promise<{
+        success: boolean;
+        error?: string;
+      }>;
+
+      stop(): Promise<{
+        success: boolean;
+      }>;
+
       update(data: {
         title: string;
         artist?: string;
         album?: string;
         duration?: number;
-      }): Promise<void>;
-
-      start(): Promise<boolean>;
-
-      stop(): Promise<void>;
+      }): Promise<{
+        success: boolean;
+      }>;
     };
 
     updater: {

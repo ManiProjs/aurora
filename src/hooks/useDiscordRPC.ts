@@ -13,79 +13,60 @@ export function useDiscordRPC() {
   const notify = useNotificationStore((s) => s.addNotification);
 
   const connected = useRef(false);
-  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const stopped = useRef(false);
-  const notifiedConnected = useRef(false);
 
   useEffect(() => {
-    stopped.current = false;
-
-    async function connect() {
-      if (stopped.current || connected.current || !enabled) {
-        return;
-      }
-
-      try {
-        const success = await window.discord?.start();
-
-        if (!success) {
-          throw new Error("Discord RPC unavailable");
-        }
-
-        if (stopped.current) {
-          window.discord?.stop();
-          return;
-        }
-
-        connected.current = true;
-
-        if (!notifiedConnected.current) {
-          notifiedConnected.current = true;
-
-          notify({
-            type: "success",
-            title: "Discord Connected",
-            message: "Rich Presence is now active.",
-          });
-        }
-      } catch (error) {
-        console.error("Discord RPC connection failed:", error);
-
-        connected.current = false;
-        notifiedConnected.current = false;
-
-        retryTimer.current = setTimeout(connect, 10000);
-      }
-    }
-
     if (!enabled) {
       if (connected.current) {
         window.discord?.stop();
 
         connected.current = false;
-        notifiedConnected.current = false;
 
         notify({
           type: "info",
-          title: "Discord Rich Presence disabled",
+          title: "Discord RPC disabled",
         });
       }
 
       return;
     }
 
-    connect();
+    async function connect() {
+      try {
+        const result = await window.discord?.start();
 
-    return () => {
-      stopped.current = true;
+        if (!result?.success) {
+          connected.current = false;
 
-      if (retryTimer.current) {
-        clearTimeout(retryTimer.current);
+          notify({
+            type: "error",
+            title: "Discord RPC unavailable",
+            message: "Discord is not running or Rich Presence is unavailable.",
+          });
 
-        retryTimer.current = null;
+          return;
+        }
+
+        connected.current = true;
+
+        notify({
+          type: "success",
+          title: "Discord Connected",
+          message: "Rich Presence is now active.",
+        });
+      } catch (error) {
+        console.error("Discord RPC failed:", error);
+
+        connected.current = false;
+
+        notify({
+          type: "error",
+          title: "Discord Connection Failed",
+          message: "Could not connect to Discord Rich Presence.",
+        });
       }
-    };
+    }
+
+    connect();
   }, [enabled, notify]);
 
   useEffect(() => {

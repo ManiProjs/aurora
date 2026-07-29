@@ -9,6 +9,7 @@ import {
   startDiscordRPC,
   updateDiscordRPC,
   stopDiscordRPC,
+  startDiscordRPCRetry,
 } from "./main/discord";
 
 import { autoUpdater } from "electron-updater";
@@ -52,8 +53,14 @@ const createWindow = () => {
   }
 };
 
-app.on("ready", () => {
+app.on("ready", async () => {
   createWindow();
+
+  const connected = await startDiscordRPC();
+
+  if (!connected) {
+    startDiscordRPCRetry();
+  }
 
   if (app.isPackaged) {
     autoUpdater.checkForUpdatesAndNotify();
@@ -100,11 +107,18 @@ ipcMain.handle("auth:clear", async () => {
 
 ipcMain.handle("discord:start", async () => {
   try {
-    return await startDiscordRPC();
+    const connected = await startDiscordRPC();
+
+    return {
+      success: connected,
+    };
   } catch (error) {
     console.error("Discord RPC unavailable:", error);
 
-    return false;
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 });
 
@@ -112,11 +126,13 @@ ipcMain.handle("discord:stop", async () => {
   try {
     stopDiscordRPC();
 
-    return true;
-  } catch (error) {
-    console.error("Discord RPC stop failed:", error);
-
-    return false;
+    return {
+      success: true,
+    };
+  } catch {
+    return {
+      success: false,
+    };
   }
 });
 
@@ -124,10 +140,14 @@ ipcMain.handle("discord:update", async (_, data) => {
   try {
     updateDiscordRPC(data);
 
-    return true;
+    return {
+      success: true,
+    };
   } catch (error) {
     console.error("Discord update failed:", error);
 
-    return false;
+    return {
+      success: false,
+    };
   }
 });
