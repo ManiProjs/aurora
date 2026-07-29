@@ -2,40 +2,69 @@ import { useEffect } from "react";
 
 import { useSettingsStore } from "../stores/settings";
 
+const builtInThemes = {
+  aurora: "theme-aurora",
+  "light-aurora": "theme-light",
+  dark: "theme-dark",
+  amoled: "theme-amoled",
+};
+
 export function useTheme() {
   const theme = useSettingsStore((s) => s.theme);
 
-  const customCSS = useSettingsStore((s) => s.customCSS);
-
   useEffect(() => {
-    async function applyTheme() {
-      document.documentElement.className = `theme-${theme}`;
+    const root = document.documentElement;
 
-      let css = customCSS;
+    /*
+      Remove previous built-in theme classes
+    */
 
-      if (!["aurora", "light-aurora", "dark", "amoled"].includes(theme)) {
-        try {
-          const themeCSS = await window.themes.load(theme);
+    Object.values(builtInThemes).forEach((className) => {
+      root.classList.remove(className);
+    });
 
-          css = `${themeCSS}\n${css}`;
-        } catch (error) {
-          console.error("Failed loading theme:", error);
-        }
-      }
+    /*
+      Remove previously loaded external theme
+    */
 
-      let style = document.getElementById("aurora-custom-css");
+    const oldTheme = document.getElementById("aurora-theme");
 
-      if (!style) {
-        style = document.createElement("style");
-
-        style.id = "aurora-custom-css";
-
-        document.head.appendChild(style);
-      }
-
-      style.textContent = css;
+    if (oldTheme) {
+      oldTheme.remove();
     }
 
-    applyTheme();
-  }, [theme, customCSS]);
+    /*
+      Built-in themes
+    */
+
+    const builtInClass = builtInThemes[theme as keyof typeof builtInThemes];
+
+    if (builtInClass) {
+      root.classList.add(builtInClass);
+
+      return;
+    }
+
+    /*
+      External themes
+    */
+
+    async function loadExternalTheme() {
+      try {
+        const css = await window.themes.load(`${theme}.css`);
+
+        const style = document.createElement("style");
+
+        style.id = "aurora-theme";
+
+        style.textContent = css;
+
+        document.head.appendChild(style);
+      } catch (error) {
+        console.error("Failed loading external theme:", error);
+      }
+    }
+
+    loadExternalTheme();
+  }, [theme]);
 }

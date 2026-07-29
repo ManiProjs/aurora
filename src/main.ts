@@ -44,23 +44,29 @@ async function listThemes() {
       continue;
     }
 
-    const content = await fs.readFile(path.join(folder, file), "utf8");
-
-    const match = content.match(/@aurora-theme\s*([\s\S]*?)\s*\*\//);
-
-    if (!match) {
-      continue;
-    }
-
     try {
+      const content = await fs.readFile(path.join(folder, file), "utf8");
+
+      const match = content.match(/@aurora-theme\s*([\s\S]*?)\s*\*\//);
+
+      if (!match) {
+        continue;
+      }
+
       const metadata = JSON.parse(match[1]);
+
+      if (!metadata.id || !metadata.name) {
+        console.warn(`Skipping invalid theme: ${file}`);
+
+        continue;
+      }
 
       themes.push({
         file,
         ...metadata,
       });
     } catch (error) {
-      console.error(`Invalid theme metadata: ${file}`, error);
+      console.error(`Failed loading theme ${file}`, error);
     }
   }
 

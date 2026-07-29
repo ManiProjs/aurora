@@ -6,6 +6,8 @@ import { useSettingsStore } from "../stores/settings";
 
 import { useAuthStore } from "../stores/auth";
 
+import ThemeCard from "../components/ThemeCard";
+
 interface ThemeMetadata {
   file: string;
 
@@ -55,10 +57,55 @@ export default function Settings() {
     logout,
   } = useAuthStore();
 
-  const [themes, setThemes] = useState<ThemeMetadata[]>([]);
+  const builtInThemes = [
+    {
+      id: "aurora",
+      name: "Aurora",
+      author: "Aurora",
+      variant: "dark",
+      preview: "#09090b",
+    },
+
+    {
+      id: "light-aurora",
+      name: "Light Aurora",
+      author: "Aurora",
+      variant: "light",
+      preview: "#fafafa",
+    },
+
+    {
+      id: "dark",
+      name: "Dark",
+      author: "Aurora",
+      variant: "dark",
+      preview: "#18181b",
+    },
+
+    {
+      id: "amoled",
+      name: "AMOLED",
+      author: "Aurora",
+      variant: "dark",
+      preview: "#000000",
+    },
+  ];
+
+  const [externalThemes, setExternalThemes] = useState<
+    {
+      id: string;
+      name: string;
+      author?: string;
+      description?: string;
+      variant?: string;
+      preview?: string;
+    }[]
+  >([]);
+
+  const themes = [...builtInThemes, ...externalThemes];
 
   useEffect(() => {
-    window.themes.list().then(setThemes).catch(console.error);
+    window.themes.list().then(setExternalThemes).catch(console.error);
   }, []);
 
   return (
@@ -95,28 +142,29 @@ export default function Settings() {
             <div>
               <p className="font-medium">Theme</p>
 
-              <select
-                value={theme}
-                onChange={(e) => setTheme(e.target.value as typeof theme)}
-                className="
-                  mt-2
-                  aurora-input
-                "
-              >
-                <option value="aurora">Aurora</option>
+              <div>
+                <p className="font-medium">Themes</p>
 
-                <option value="light-aurora">Light Aurora</option>
-
-                <option value="dark">Dark</option>
-
-                <option value="amoled">AMOLED</option>
-
-                {themes.map((item) => (
-                  <option key={item.id} value={item.file}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
+                <div
+                  className="
+      mt-4
+      grid
+      gap-5
+      sm:grid-cols-2
+    "
+                >
+                  {themes.map((item) => (
+                    <ThemeCard
+                      key={item.id}
+                      theme={item}
+                      active={theme === item.id}
+                      onApply={() => {
+                        setTheme(item.id);
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div>

@@ -48,6 +48,7 @@ declare global {
           version?: string;
           description?: string;
           variant?: string;
+          preview?: string;
         }[]
       >;
 
