@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld("auth", {
   },
 
   // aliases for newer code
+
   save(auth: { server: string; username: string; password: string }) {
     return ipcRenderer.invoke("auth:save", auth);
   },
@@ -51,7 +52,19 @@ contextBridge.exposeInMainWorld("themes", {
     return ipcRenderer.invoke("themes:list");
   },
 
-  load(name: string) {
-    return ipcRenderer.invoke("themes:load", name);
+  load(file: string) {
+    return ipcRenderer.invoke("themes:load", file);
+  },
+
+  openFolder() {
+    return ipcRenderer.invoke("themes:open-folder");
+  },
+
+  import() {
+    return ipcRenderer.invoke("themes:import");
+  },
+
+  export(file: string) {
+    return ipcRenderer.invoke("themes:export", file);
   },
 });

@@ -41,7 +41,7 @@ declare global {
     themes: {
       list(): Promise<
         {
-          file: string;
+          file?: string;
           id: string;
           name: string;
           author?: string;
@@ -53,6 +53,12 @@ declare global {
       >;
 
       load(file: string): Promise<string>;
+
+      openFolder(): Promise<boolean>;
+
+      import(): Promise<boolean>;
+
+      export(file: string): Promise<boolean>;
     };
   }
 }

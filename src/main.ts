@@ -1,4 +1,11 @@
-import { app, BrowserWindow, safeStorage, ipcMain } from "electron";
+import {
+  app,
+  BrowserWindow,
+  safeStorage,
+  ipcMain,
+  shell,
+  dialog,
+} from "electron";
 
 import path from "node:path";
 import fs from "node:fs/promises";
@@ -77,6 +84,74 @@ async function loadTheme(file: string) {
   const themeFile = path.join(getThemesPath(), file);
 
   return fs.readFile(themeFile, "utf8");
+}
+
+async function openThemesFolder() {
+  const folder = getThemesPath();
+
+  await fs.mkdir(folder, {
+    recursive: true,
+  });
+
+  await shell.openPath(folder);
+}
+
+async function importTheme() {
+  const result = await dialog.showOpenDialog({
+    title: "Import Aurora Theme",
+
+    properties: ["openFile"],
+
+    filters: [
+      {
+        name: "Aurora Theme",
+        extensions: ["css"],
+      },
+    ],
+  });
+
+  if (result.canceled) {
+    return false;
+  }
+
+  const source = result.filePaths[0];
+
+  const destination = path.join(getThemesPath(), path.basename(source));
+
+  await fs.mkdir(getThemesPath(), {
+    recursive: true,
+  });
+
+  await fs.copyFile(source, destination);
+
+  return true;
+}
+
+async function exportTheme(file: string) {
+  const result = await dialog.showSaveDialog({
+    title: "Export Aurora Theme",
+
+    defaultPath: file,
+
+    filters: [
+      {
+        name: "Aurora Theme",
+        extensions: ["css"],
+      },
+    ],
+  });
+
+  if (result.canceled || !result.filePath) {
+    return false;
+  }
+
+  await fs.copyFile(
+    path.join(getThemesPath(), file),
+
+    result.filePath,
+  );
+
+  return true;
 }
 
 const createWindow = () => {
@@ -213,4 +288,18 @@ ipcMain.handle("themes:list", async () => {
 
 ipcMain.handle("themes:load", async (_, file: string) => {
   return await loadTheme(file);
+});
+
+ipcMain.handle("themes:open-folder", async () => {
+  await openThemesFolder();
+
+  return true;
+});
+
+ipcMain.handle("themes:import", async () => {
+  return await importTheme();
+});
+
+ipcMain.handle("themes:export", async (_, file: string) => {
+  return await exportTheme(file);
 });

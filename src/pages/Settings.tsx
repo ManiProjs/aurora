@@ -9,7 +9,7 @@ import { useAuthStore } from "../stores/auth";
 import ThemeCard from "../components/ThemeCard";
 
 interface ThemeMetadata {
-  file: string;
+  file?: string;
 
   id: string;
 
@@ -20,6 +20,10 @@ interface ThemeMetadata {
   description?: string;
 
   version?: string;
+
+  variant?: string;
+
+  preview?: string;
 }
 
 export default function Settings() {
@@ -57,7 +61,7 @@ export default function Settings() {
     logout,
   } = useAuthStore();
 
-  const builtInThemes = [
+  const builtInThemes: ThemeMetadata[] = [
     {
       id: "aurora",
       name: "Aurora",
@@ -91,22 +95,27 @@ export default function Settings() {
     },
   ];
 
-  const [externalThemes, setExternalThemes] = useState<
-    {
-      id: string;
-      name: string;
-      author?: string;
-      description?: string;
-      variant?: string;
-      preview?: string;
-    }[]
-  >([]);
+  const [externalThemes, setExternalThemes] = useState<ThemeMetadata[]>([]);
 
   const themes = [...builtInThemes, ...externalThemes];
 
   useEffect(() => {
-    window.themes.list().then(setExternalThemes).catch(console.error);
+    loadThemes();
   }, []);
+
+  async function loadThemes() {
+    const themes = await window.themes.list();
+
+    setExternalThemes(themes);
+  }
+
+  async function importTheme() {
+    const imported = await window.themes.import();
+
+    if (imported) {
+      await loadThemes();
+    }
+  }
 
   return (
     <main
@@ -140,10 +149,46 @@ export default function Settings() {
             </SettingRow>
 
             <div>
-              <p className="font-medium">Theme</p>
-
               <div>
                 <p className="font-medium">Themes</p>
+
+                <div
+                  className="
+    mt-4
+    flex
+    gap-3
+  "
+                >
+                  <button
+                    onClick={async () => {
+                      await window.themes.openFolder();
+                    }}
+                    className="
+      rounded-xl
+      aurora-button-primary
+    "
+                  >
+                    Open Themes Folder
+                  </button>
+
+                  <button
+                    onClick={async () => {
+                      const imported = await window.themes.import();
+
+                      if (imported) {
+                        const themes = await window.themes.list();
+
+                        setExternalThemes(themes);
+                      }
+                    }}
+                    className="
+      rounded-xl
+      aurora-button
+    "
+                  >
+                    Import Theme
+                  </button>
+                </div>
 
                 <div
                   className="
@@ -161,6 +206,11 @@ export default function Settings() {
                       onApply={() => {
                         setTheme(item.id);
                       }}
+                      onExport={
+                        item.file
+                          ? () => window.themes.export(item.file!)
+                          : undefined
+                      }
                     />
                   ))}
                 </div>
