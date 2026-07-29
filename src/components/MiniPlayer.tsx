@@ -6,6 +6,11 @@ import {
   Music2,
   Volume2,
   Square,
+  Heart,
+  ListMusic,
+  Mic2,
+  Shuffle,
+  Repeat,
 } from "lucide-react";
 
 import { motion } from "framer-motion";
@@ -49,55 +54,53 @@ export default function MiniPlayer(): ReactElement | null {
     return null;
   }
 
-  function stopPropagation(e: MouseEvent) {
-    e.stopPropagation();
+  function stopPropagation(event: MouseEvent) {
+    event.stopPropagation();
   }
 
   return (
     <motion.div
       initial={{
-        y: 100,
+        y: 120,
         opacity: 0,
-        scale: 0.96,
       }}
       animate={{
         y: 0,
         opacity: 1,
-        scale: 1,
       }}
       exit={{
-        y: 100,
+        y: 120,
         opacity: 0,
-        scale: 0.96,
       }}
       transition={{
         type: "spring",
-        stiffness: 300,
-        damping: 30,
-        mass: 0.8,
+        stiffness: 260,
+        damping: 28,
       }}
       onClick={openFullPlayer}
       className="
-        aurora-glass
         fixed
         bottom-4
         left-4
         right-4
         z-40
+
         flex
         h-24
         items-center
-        gap-6
+        gap-5
+
         rounded-3xl
+        aurora-glass
         p-4
       "
     >
-      {/* Artwork + info */}
+      {/* Artwork */}
 
       <div
         className="
           flex
-          w-72
+          w-80
           shrink-0
           items-center
           gap-4
@@ -108,24 +111,23 @@ export default function MiniPlayer(): ReactElement | null {
             src={album.coverArt}
             alt={album.name}
             className="
-              h-14
-              w-14
-              rounded-2xl
-              object-cover
-              shadow-lg
-            "
+    h-16
+    w-16
+    rounded-2xl
+    object-cover
+    shadow-xl
+  "
           />
         ) : (
           <div
             className="
               flex
-              h-14
-              w-14
+              h-16
+              w-16
               items-center
               justify-center
               rounded-2xl
-              bg-zinc-800
-              text-zinc-400
+              aurora-surface-muted
             "
           >
             <Music2 size={24} />
@@ -135,9 +137,9 @@ export default function MiniPlayer(): ReactElement | null {
         <div className="min-w-0">
           <p
             className="
-              aurora-text
               truncate
               font-semibold
+              aurora-text
             "
           >
             {song.title}
@@ -145,12 +147,13 @@ export default function MiniPlayer(): ReactElement | null {
 
           <p
             className="
-              aurora-text-muted
               truncate
               text-sm
+              aurora-text-muted
             "
           >
             {song.artist}
+
             {song.album && ` • ${song.album}`}
           </p>
         </div>
@@ -163,16 +166,17 @@ export default function MiniPlayer(): ReactElement | null {
         className="
           flex
           items-center
-          gap-3
+          gap-2
         "
       >
+        <button className="aurora-button rounded-full p-2" title="Shuffle">
+          <Shuffle size={18} />
+        </button>
+
         <button
           onClick={previous}
-          className="
-            aurora-button
-            rounded-full
-            p-2
-          "
+          className="aurora-button rounded-full p-2"
+          title="Previous"
         >
           <SkipBack size={20} />
         </button>
@@ -183,47 +187,44 @@ export default function MiniPlayer(): ReactElement | null {
           }}
           onClick={playing ? pause : resume}
           className="
-            flex
-            h-12
-            w-12
-            items-center
-            justify-center
-            rounded-full
-            bg-zinc-900
-            text-white
-            shadow-lg
-            dark:bg-white
-            dark:text-black
-          "
+    flex
+    h-12
+    w-12
+    items-center
+    justify-center
+    rounded-full
+    bg-[var(--aurora-text)]
+    text-[var(--aurora-bg)]
+    shadow-lg
+    transition
+    hover:scale-105
+  "
         >
           {playing ? (
-            <Pause size={22} fill="currentColor" />
+            <Pause size={22} fill="currentColor" strokeWidth={2.5} />
           ) : (
-            <Play size={22} fill="currentColor" />
+            <Play size={22} fill="currentColor" strokeWidth={2.5} />
           )}
         </motion.button>
 
         <button
           onClick={next}
-          className="
-            aurora-button
-            rounded-full
-            p-2
-          "
+          className="aurora-button rounded-full p-2"
+          title="Next"
         >
           <SkipForward size={20} />
         </button>
 
         <button
           onClick={stop}
-          className="
-            aurora-button
-            rounded-full
-            p-2
-          "
-          title="Stop playback"
+          className="aurora-button rounded-full p-2"
+          title="Stop"
         >
           <Square size={18} fill="currentColor" />
+        </button>
+
+        <button className="aurora-button rounded-full p-2" title="Repeat">
+          <Repeat size={18} />
         </button>
       </div>
 
@@ -240,9 +241,9 @@ export default function MiniPlayer(): ReactElement | null {
       >
         <span
           className="
-            aurora-text-muted
             w-10
             text-xs
+            aurora-text-muted
           "
         >
           {formatTime(progress)}
@@ -252,13 +253,36 @@ export default function MiniPlayer(): ReactElement | null {
 
         <span
           className="
-            aurora-text-muted
             w-10
             text-xs
+            aurora-text-muted
           "
         >
           {formatTime(duration)}
         </span>
+      </div>
+
+      {/* Extra actions */}
+
+      <div
+        onClick={stopPropagation}
+        className="
+          flex
+          items-center
+          gap-2
+        "
+      >
+        <button className="aurora-button rounded-full p-2" title="Lyrics">
+          <Mic2 size={19} />
+        </button>
+
+        <button className="aurora-button rounded-full p-2" title="Queue">
+          <ListMusic size={19} />
+        </button>
+
+        <button className="aurora-button rounded-full p-2" title="Favorite">
+          <Heart size={19} />
+        </button>
       </div>
 
       {/* Volume */}
@@ -267,7 +291,7 @@ export default function MiniPlayer(): ReactElement | null {
         onClick={stopPropagation}
         className="
           flex
-          w-36
+          w-40
           items-center
           gap-2
         "

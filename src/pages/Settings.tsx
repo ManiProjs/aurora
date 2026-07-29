@@ -97,7 +97,7 @@ export default function Settings() {
 
               <select
                 value={theme}
-                onChange={(e) => setTheme(e.target.value)}
+                onChange={(e) => setTheme(e.target.value as typeof theme)}
                 className="
                   mt-2
                   aurora-input

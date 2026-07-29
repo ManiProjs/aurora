@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+type Theme = "aurora" | "light-aurora" | "dark" | "amoled";
+
 interface SettingsState {
   discordRPC: boolean;
 
@@ -10,7 +12,9 @@ interface SettingsState {
 
   autoplay: boolean;
 
-  theme: "aurora" | "light-aurora" | "dark" | "amoled" | string;
+  autoScrollLyrics: boolean;
+
+  theme: Theme;
 
   customCSS: string;
 
@@ -22,7 +26,9 @@ interface SettingsState {
 
   setAutoplay(value: boolean): void;
 
-  setTheme(value: SettingsState["theme"]): void;
+  setAutoScrollLyrics(value: boolean): void;
+
+  setTheme(value: Theme): void;
 
   setCustomCSS(value: string): void;
 }
@@ -37,6 +43,8 @@ export const useSettingsStore = create<SettingsState>()(
       resumePlayback: true,
 
       autoplay: true,
+
+      autoScrollLyrics: true,
 
       theme: "aurora",
 
@@ -63,6 +71,12 @@ export const useSettingsStore = create<SettingsState>()(
       setAutoplay(value) {
         set({
           autoplay: value,
+        });
+      },
+
+      setAutoScrollLyrics(value) {
+        set({
+          autoScrollLyrics: value,
         });
       },
 
