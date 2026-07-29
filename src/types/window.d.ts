@@ -24,11 +24,11 @@ declare global {
         artist?: string;
         album?: string;
         duration?: number;
-      }): void;
+      }): Promise<void>;
 
-      start(): void;
+      start(): Promise<boolean>;
 
-      stop(): void;
+      stop(): Promise<void>;
     };
 
     updater: {

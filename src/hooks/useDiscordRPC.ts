@@ -13,13 +13,58 @@ export function useDiscordRPC() {
   const notify = useNotificationStore((s) => s.addNotification);
 
   const connected = useRef(false);
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const stopped = useRef(false);
+  const notifiedConnected = useRef(false);
 
   useEffect(() => {
+    stopped.current = false;
+
+    async function connect() {
+      if (stopped.current || connected.current || !enabled) {
+        return;
+      }
+
+      try {
+        const success = await window.discord?.start();
+
+        if (!success) {
+          throw new Error("Discord RPC unavailable");
+        }
+
+        if (stopped.current) {
+          window.discord?.stop();
+          return;
+        }
+
+        connected.current = true;
+
+        if (!notifiedConnected.current) {
+          notifiedConnected.current = true;
+
+          notify({
+            type: "success",
+            title: "Discord Connected",
+            message: "Rich Presence is now active.",
+          });
+        }
+      } catch (error) {
+        console.error("Discord RPC connection failed:", error);
+
+        connected.current = false;
+        notifiedConnected.current = false;
+
+        retryTimer.current = setTimeout(connect, 10000);
+      }
+    }
+
     if (!enabled) {
       if (connected.current) {
         window.discord?.stop();
 
         connected.current = false;
+        notifiedConnected.current = false;
 
         notify({
           type: "info",
@@ -30,30 +75,17 @@ export function useDiscordRPC() {
       return;
     }
 
-    async function connect() {
-      try {
-        await window.discord?.start();
-
-        connected.current = true;
-
-        notify({
-          type: "success",
-          title: "Discord Connected",
-          message:
-            "Rich Presence is now active and your friends on Discord can see what music you're playing to.",
-        });
-      } catch (error) {
-        console.error("Discord RPC failed:", error);
-
-        notify({
-          type: "error",
-          title: "Discord Connection Failed",
-          message: "Could not connect to Discord Rich Presence.",
-        });
-      }
-    }
-
     connect();
+
+    return () => {
+      stopped.current = true;
+
+      if (retryTimer.current) {
+        clearTimeout(retryTimer.current);
+
+        retryTimer.current = null;
+      }
+    };
   }, [enabled, notify]);
 
   useEffect(() => {

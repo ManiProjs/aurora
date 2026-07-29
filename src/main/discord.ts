@@ -4,28 +4,61 @@ const CLIENT_ID = "1531259992076718090";
 
 let rpc: RPC.Client | null = null;
 
-export async function startDiscordRPC() {
+export function startDiscordRPC(): Promise<boolean> {
   if (rpc) {
-    return;
+    return Promise.resolve(true);
   }
 
-  rpc = new RPC.Client({
-    transport: "ipc",
-  });
-
-  rpc.on("ready", () => {
-    console.log("Discord Rich Presence connected");
-  });
-
-  try {
-    await rpc.login({
-      clientId: CLIENT_ID,
+  return new Promise((resolve) => {
+    const client = new RPC.Client({
+      transport: "ipc",
     });
-  } catch (error) {
-    console.log("Discord RPC unavailable:", error);
 
-    rpc = null;
-  }
+    rpc = client;
+
+    let settled = false;
+
+    const finish = (value: boolean) => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      resolve(value);
+    };
+
+    client.once("ready", () => {
+      console.log("Discord Rich Presence connected");
+
+      finish(true);
+    });
+
+    client.on("error", (error) => {
+      console.error("Discord RPC error:", error);
+
+      rpc = null;
+
+      finish(false);
+    });
+
+    client.on("disconnected", () => {
+      console.log("Discord RPC disconnected");
+
+      rpc = null;
+    });
+
+    client
+      .login({
+        clientId: CLIENT_ID,
+      })
+      .catch((error) => {
+        console.error("Discord RPC unavailable:", error);
+
+        rpc = null;
+
+        finish(false);
+      });
+  });
 }
 
 export function updateDiscordRPC({
@@ -48,7 +81,7 @@ export function updateDiscordRPC({
   rpc.setActivity({
     details: "Listening on Aurora",
 
-    state: `${artist} • ${title}`,
+    state: `${artist ?? "Unknown Artist"} • ${title}`,
 
     largeImageKey: "aurora",
 
@@ -68,6 +101,7 @@ export function stopDiscordRPC() {
   }
 
   rpc.clearActivity();
+
   rpc.destroy();
 
   rpc = null;
