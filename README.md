@@ -174,6 +174,7 @@ npm run make
 # Documentation
 
 - [Custom CSS](/docs/custom-css.md)
+- [Themes](/docs/themes.md)
 
 # Tech Stack
 
