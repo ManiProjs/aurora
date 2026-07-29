@@ -30,6 +30,7 @@ import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useMediaKeys } from "./hooks/useMediaKeys";
 import { useTheme } from "./hooks/useTheme";
 import { useUpdater } from "./hooks/useUpdater";
+import { useCustomCSS } from "./hooks/useCustomCSS";
 
 import { MINI_PLAYER_HEIGHT } from "./constants/layout";
 
@@ -43,6 +44,7 @@ export default function App() {
 
   const [checkingAuth, setCheckingAuth] = useState(true);
 
+  useCustomCSS();
   useUpdater();
   useDiscordRPC();
   useKeyboardShortcuts();

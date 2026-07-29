@@ -32,17 +32,15 @@
 
 /* Light Aurora */
 
-.theme-light-aurora {
-  --aurora-bg: #eef2ff;
-  --aurora-surface: rgba(255, 255, 255, 0.8);
-  --aurora-surface-muted: #e0e7ff;
+.theme-light {
+  --aurora-bg: #fafafa;
+  --aurora-surface: #ffffff;
+  --aurora-surface-muted: #f4f4f5;
 
   --aurora-text: #18181b;
   --aurora-text-muted: #52525b;
 
   --aurora-border: rgba(0, 0, 0, 0.08);
-
-  --aurora-hover: rgba(0, 0, 0, 0.06);
 }
 
 /* Pure Dark */

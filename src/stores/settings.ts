@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type Theme = "dark" | "amoled" | "aurora" | "light-aurora";
+type Theme = "light" | "aurora" | "dark" | "amoled";
 
 interface SettingsState {
   discordRPC: boolean;

@@ -2,15 +2,8 @@ import { useEffect } from "react";
 
 import { useSettingsStore } from "../stores/settings";
 
-export function useTheme() {
-  const theme = useSettingsStore((s) => s.theme);
+export function useCustomCSS() {
   const customCSS = useSettingsStore((s) => s.customCSS);
-
-  useEffect(() => {
-    document.documentElement.className = "";
-
-    document.documentElement.classList.add(`theme-${theme}`);
-  }, [theme]);
 
   useEffect(() => {
     let style = document.getElementById(
@@ -28,7 +21,9 @@ export function useTheme() {
     style.textContent = customCSS;
 
     return () => {
-      style!.textContent = "";
+      if (style) {
+        style.textContent = "";
+      }
     };
   }, [customCSS]);
 }
