@@ -3,22 +3,22 @@ export {};
 declare global {
   interface Window {
     auth: {
-      saveAuth(auth: {
+      save(auth: {
         server: string;
         username: string;
         password: string;
       }): Promise<void>;
 
-      loadAuth(): Promise<{
+      load(): Promise<{
         server: string;
         username: string;
         password: string;
       } | null>;
 
-      clearAuth(): Promise<void>;
+      clear(): Promise<void>;
     };
 
-    discord?: {
+    discord: {
       start(): Promise<{
         success: boolean;
         error?: string;
@@ -38,8 +38,20 @@ declare global {
       }>;
     };
 
-    updater: {
-      onUpdate(callback: (event: string, data?: unknown) => void): void;
+    themes: {
+      list(): Promise<
+        {
+          file: string;
+          id: string;
+          name: string;
+          author?: string;
+          version?: string;
+          description?: string;
+          variant?: string;
+        }[]
+      >;
+
+      load(file: string): Promise<string>;
     };
   }
 }

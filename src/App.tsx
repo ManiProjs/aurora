@@ -31,6 +31,7 @@ import { useMediaKeys } from "./hooks/useMediaKeys";
 import { useTheme } from "./hooks/useTheme";
 import { useUpdater } from "./hooks/useUpdater";
 import { useCustomCSS } from "./hooks/useCustomCSS";
+import { useThemes } from "./hooks/useThemes";
 
 import { MINI_PLAYER_HEIGHT } from "./constants/layout";
 
@@ -44,6 +45,7 @@ export default function App() {
 
   const [checkingAuth, setCheckingAuth] = useState(true);
 
+  useThemes();
   useCustomCSS();
   useUpdater();
   useDiscordRPC();
@@ -84,7 +86,7 @@ export default function App() {
       const start = performance.now();
 
       try {
-        const auth = await window.auth.loadAuth();
+        const auth = await window.auth.load();
 
         if (auth) {
           login(auth.server, auth.username, auth.password);

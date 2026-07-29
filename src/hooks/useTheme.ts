@@ -4,31 +4,38 @@ import { useSettingsStore } from "../stores/settings";
 
 export function useTheme() {
   const theme = useSettingsStore((s) => s.theme);
+
   const customCSS = useSettingsStore((s) => s.customCSS);
 
   useEffect(() => {
-    document.documentElement.className = "";
+    async function applyTheme() {
+      document.documentElement.className = `theme-${theme}`;
 
-    document.documentElement.classList.add(`theme-${theme}`);
-  }, [theme]);
+      let css = customCSS;
 
-  useEffect(() => {
-    let style = document.getElementById(
-      "aurora-custom-css",
-    ) as HTMLStyleElement | null;
+      if (!["aurora", "light-aurora", "dark", "amoled"].includes(theme)) {
+        try {
+          const themeCSS = await window.themes.load(theme);
 
-    if (!style) {
-      style = document.createElement("style");
+          css = `${themeCSS}\n${css}`;
+        } catch (error) {
+          console.error("Failed loading theme:", error);
+        }
+      }
 
-      style.id = "aurora-custom-css";
+      let style = document.getElementById("aurora-custom-css");
 
-      document.head.appendChild(style);
+      if (!style) {
+        style = document.createElement("style");
+
+        style.id = "aurora-custom-css";
+
+        document.head.appendChild(style);
+      }
+
+      style.textContent = css;
     }
 
-    style.textContent = customCSS;
-
-    return () => {
-      style!.textContent = "";
-    };
-  }, [customCSS]);
+    applyTheme();
+  }, [theme, customCSS]);
 }

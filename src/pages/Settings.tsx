@@ -1,27 +1,65 @@
+import { useEffect, useState } from "react";
+
 import Toggle from "../components/Toggle";
-import CodeEditor from "../components/CodeEditor";
 
 import { useSettingsStore } from "../stores/settings";
+
 import { useAuthStore } from "../stores/auth";
+
+interface ThemeMetadata {
+  file: string;
+
+  id: string;
+
+  name: string;
+
+  author?: string;
+
+  description?: string;
+
+  version?: string;
+}
 
 export default function Settings() {
   const {
     discordRPC,
+
     animations,
+
     resumePlayback,
+
     autoplay,
+
     theme,
+
     customCSS,
 
     setDiscordRPC,
+
     setAnimations,
+
     setResumePlayback,
+
     setAutoplay,
+
     setTheme,
+
     setCustomCSS,
   } = useSettingsStore();
 
-  const { server, username, logout } = useAuthStore();
+  const {
+    server,
+
+    username,
+
+    logout,
+  } = useAuthStore();
+
+  const [themes, setThemes] = useState<ThemeMetadata[]>([]);
+
+  useEffect(() => {
+    window.themes.list().then(setThemes).catch(console.error);
+  }, []);
 
   return (
     <main
@@ -34,8 +72,6 @@ export default function Settings() {
     >
       <div className="mx-auto max-w-3xl">
         <h1 className="text-4xl font-bold">Settings</h1>
-
-        {/* Appearance */}
 
         <section className="mt-10">
           <h2 className="text-xl font-semibold">Appearance</h2>
@@ -61,10 +97,9 @@ export default function Settings() {
 
               <select
                 value={theme}
-                onChange={(e) => setTheme(e.target.value as typeof theme)}
+                onChange={(e) => setTheme(e.target.value)}
                 className="
                   mt-2
-                  rounded-xl
                   aurora-input
                 "
               >
@@ -75,22 +110,39 @@ export default function Settings() {
                 <option value="dark">Dark</option>
 
                 <option value="amoled">AMOLED</option>
+
+                {themes.map((item) => (
+                  <option key={item.id} value={item.file}>
+                    {item.name}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div>
               <p className="font-medium">Custom CSS</p>
 
-              <p className="text-sm aurora-text-muted">
-                Override Aurora styling with your own CSS
-              </p>
+              <textarea
+                value={customCSS}
 
-              <CodeEditor value={customCSS} onChange={setCustomCSS} />
+                onChange={(e) => setCustomCSS(e.target.value)}
+
+                className="
+                  mt-3
+                  h-48
+                  w-full
+                  aurora-input
+                  rounded-xl
+                  resize-none
+                  font-mono
+                  text-sm
+                "
+
+                placeholder="/* Custom CSS */"
+              />
             </div>
           </div>
         </section>
-
-        {/* Playback */}
 
         <section className="mt-10">
           <h2 className="text-xl font-semibold">Playback</h2>
@@ -120,8 +172,6 @@ export default function Settings() {
           </div>
         </section>
 
-        {/* Integrations */}
-
         <section className="mt-10">
           <h2 className="text-xl font-semibold">Integrations</h2>
 
@@ -142,8 +192,6 @@ export default function Settings() {
           </div>
         </section>
 
-        {/* Accounts */}
-
         <section className="mt-10">
           <h2 className="text-xl font-semibold">Accounts</h2>
 
@@ -153,51 +201,25 @@ export default function Settings() {
               rounded-3xl
               aurora-glass
               p-6
-              space-y-4
             "
           >
-            <div>
-              <p className="font-medium">Connected account</p>
+            <p>{username}</p>
 
-              <p className="text-sm aurora-text-muted">{username}</p>
-
-              <p className="text-sm aurora-text-muted">{server}</p>
-            </div>
+            <p className="text-sm aurora-text-muted">{server}</p>
 
             <button
               onClick={logout}
               className="
+                mt-4
                 rounded-xl
                 bg-red-500/10
                 px-5
                 py-3
-                font-semibold
                 text-red-400
-                transition
-                hover:bg-red-500/20
               "
             >
               Log out
             </button>
-          </div>
-        </section>
-
-        {/* About */}
-
-        <section className="mt-10">
-          <h2 className="text-xl font-semibold">About</h2>
-
-          <div
-            className="
-              mt-4
-              rounded-3xl
-              aurora-glass
-              p-6
-            "
-          >
-            <p className="font-semibold">Aurora</p>
-
-            <p className="text-sm aurora-text-muted">Version 0.3.1-beta</p>
           </div>
         </section>
       </div>

@@ -1,6 +1,8 @@
 import { app, BrowserWindow, safeStorage, ipcMain } from "electron";
 
 import path from "node:path";
+import fs from "node:fs/promises";
+
 import started from "electron-squirrel-startup";
 
 import { saveAuth, loadAuth, clearAuth } from "./services/authStorage";
@@ -14,24 +16,80 @@ import {
 
 import { autoUpdater } from "electron-updater";
 
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();
+}
+
+function getThemesPath() {
+  const folder = path.join(app.getPath("userData"), "themes");
+
+  console.log("Aurora themes folder:", folder);
+
+  return folder;
+}
+
+async function listThemes() {
+  const folder = getThemesPath();
+
+  await fs.mkdir(folder, {
+    recursive: true,
+  });
+
+  const files = await fs.readdir(folder);
+
+  const themes = [];
+
+  for (const file of files) {
+    if (!file.endsWith(".css")) {
+      continue;
+    }
+
+    const content = await fs.readFile(path.join(folder, file), "utf8");
+
+    const match = content.match(/@aurora-theme\s*([\s\S]*?)\s*\*\//);
+
+    if (!match) {
+      continue;
+    }
+
+    try {
+      const metadata = JSON.parse(match[1]);
+
+      themes.push({
+        file,
+        ...metadata,
+      });
+    } catch (error) {
+      console.error(`Invalid theme metadata: ${file}`, error);
+    }
+  }
+
+  return themes;
+}
+
+async function loadTheme(file: string) {
+  const themeFile = path.join(getThemesPath(), file);
+
+  return fs.readFile(themeFile, "utf8");
 }
 
 const createWindow = () => {
   const mainWindow = new BrowserWindow({
     width: 1400,
+
     height: 900,
 
     minWidth: 1100,
+
     minHeight: 700,
 
     titleBarStyle: "hidden",
 
     titleBarOverlay: {
       color: "#00000000",
+
       symbolColor: "#ffffff",
+
       height: 40,
     },
 
@@ -39,7 +97,9 @@ const createWindow = () => {
 
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
+
       nodeIntegration: false,
+
       contextIsolation: true,
     },
   });
@@ -83,9 +143,9 @@ app.on("activate", () => {
   }
 });
 
-// --------------------
-// Authentication
-// --------------------
+/*
+ Authentication
+*/
 
 ipcMain.handle("auth:save", async (_, auth) => {
   console.log("Encryption available:", safeStorage.isEncryptionAvailable());
@@ -94,60 +154,57 @@ ipcMain.handle("auth:save", async (_, auth) => {
 });
 
 ipcMain.handle("auth:load", async () => {
-  return await loadAuth();
+  return loadAuth();
 });
 
 ipcMain.handle("auth:clear", async () => {
   await clearAuth();
 });
 
-// --------------------
-// Discord RPC
-// --------------------
+/*
+ Discord RPC
+*/
 
 ipcMain.handle("discord:start", async () => {
   try {
-    const connected = await startDiscordRPC();
+    await startDiscordRPC();
 
     return {
-      success: connected,
+      success: true,
     };
   } catch (error) {
-    console.error("Discord RPC unavailable:", error);
-
     return {
       success: false,
+
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 });
 
 ipcMain.handle("discord:stop", async () => {
-  try {
-    stopDiscordRPC();
+  stopDiscordRPC();
 
-    return {
-      success: true,
-    };
-  } catch {
-    return {
-      success: false,
-    };
-  }
+  return {
+    success: true,
+  };
 });
 
 ipcMain.handle("discord:update", async (_, data) => {
-  try {
-    updateDiscordRPC(data);
+  updateDiscordRPC(data);
 
-    return {
-      success: true,
-    };
-  } catch (error) {
-    console.error("Discord update failed:", error);
+  return {
+    success: true,
+  };
+});
 
-    return {
-      success: false,
-    };
-  }
+/*
+ Themes
+*/
+
+ipcMain.handle("themes:list", async () => {
+  return await listThemes();
+});
+
+ipcMain.handle("themes:load", async (_, file: string) => {
+  return await loadTheme(file);
 });

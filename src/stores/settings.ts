@@ -1,8 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type Theme = "light" | "aurora" | "dark" | "amoled";
-
 interface SettingsState {
   discordRPC: boolean;
 
@@ -12,7 +10,7 @@ interface SettingsState {
 
   autoplay: boolean;
 
-  theme: Theme;
+  theme: "aurora" | "light-aurora" | "dark" | "amoled" | string;
 
   customCSS: string;
 
@@ -24,7 +22,7 @@ interface SettingsState {
 
   setAutoplay(value: boolean): void;
 
-  setTheme(value: Theme): void;
+  setTheme(value: SettingsState["theme"]): void;
 
   setCustomCSS(value: string): void;
 }
