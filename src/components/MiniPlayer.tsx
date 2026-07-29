@@ -5,6 +5,7 @@ import {
   SkipForward,
   Music2,
   Volume2,
+  Square,
 } from "lucide-react";
 
 import { motion } from "framer-motion";
@@ -13,8 +14,6 @@ import type { MouseEvent, ReactElement } from "react";
 import Slider from "./Slider";
 
 import { usePlayerStore } from "../stores/player";
-
-import { useNavigationStore } from "../stores/navigation";
 
 function formatTime(seconds: number) {
   const mins = Math.floor(seconds / 60);
@@ -31,6 +30,7 @@ export default function MiniPlayer(): ReactElement | null {
 
   const pause = usePlayerStore((s) => s.pause);
   const resume = usePlayerStore((s) => s.resume);
+  const stop = usePlayerStore((s) => s.stop);
 
   const next = usePlayerStore((s) => s.next);
   const previous = usePlayerStore((s) => s.previous);
@@ -45,8 +45,6 @@ export default function MiniPlayer(): ReactElement | null {
 
   const openFullPlayer = usePlayerStore((s) => s.openFullPlayer);
 
-  const setPage = useNavigationStore((s) => s.setPage);
-
   if (!song) {
     return null;
   }
@@ -58,21 +56,27 @@ export default function MiniPlayer(): ReactElement | null {
   return (
     <motion.div
       initial={{
-        y: 120,
+        y: 100,
         opacity: 0,
+        scale: 0.96,
       }}
       animate={{
         y: 0,
         opacity: 1,
+        scale: 1,
       }}
-      whileHover={{
-        y: -4,
+      exit={{
+        y: 100,
+        opacity: 0,
+        scale: 0.96,
       }}
       transition={{
         type: "spring",
-        stiffness: 180,
-        damping: 20,
+        stiffness: 300,
+        damping: 30,
+        mass: 0.8,
       }}
+      onClick={openFullPlayer}
       className="
         aurora-glass
         fixed
@@ -100,47 +104,17 @@ export default function MiniPlayer(): ReactElement | null {
         "
       >
         {album?.coverArt ? (
-          <div className="relative cursor-pointer" onClick={openFullPlayer}>
-            <div
-              className="
-                h-14
-                w-14
-                overflow-hidden
-                rounded-2xl
-                shadow-lg
-              "
-            >
-              <img
-                src={album.coverArt}
-                alt={album.name}
-                className="
-                  h-full
-                  w-full
-                  object-cover
-                "
-              />
-            </div>
-
-            {playing && (
-              <motion.div
-                animate={{
-                  opacity: [0.4, 0.8, 0.4],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                }}
-                className="
-                  pointer-events-none
-                  absolute
-                  inset-0
-                  rounded-2xl
-                  ring-2
-                  ring-white/40
-                "
-              />
-            )}
-          </div>
+          <img
+            src={album.coverArt}
+            alt={album.name}
+            className="
+              h-14
+              w-14
+              rounded-2xl
+              object-cover
+              shadow-lg
+            "
+          />
         ) : (
           <div
             className="
@@ -150,9 +124,8 @@ export default function MiniPlayer(): ReactElement | null {
               items-center
               justify-center
               rounded-2xl
-              bg-zinc-200
-              shadow-lg
-              dark:bg-zinc-800
+              bg-zinc-800
+              text-zinc-400
             "
           >
             <Music2 size={24} />
@@ -172,42 +145,13 @@ export default function MiniPlayer(): ReactElement | null {
 
           <p
             className="
-    aurora-text-muted
-    truncate
-    text-sm
-  "
+              aurora-text-muted
+              truncate
+              text-sm
+            "
           >
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setPage("artist");
-              }}
-              className="
-      transition
-      hover:text-white
-    "
-            >
-              {song.artist}
-            </button>
-
-            {song.album && (
-              <>
-                {" • "}
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setPage("album");
-                  }}
-                  className="
-          transition
-          hover:text-white
-        "
-                >
-                  {song.album}
-                </button>
-              </>
-            )}
+            {song.artist}
+            {song.album && ` • ${song.album}`}
           </p>
         </div>
       </div>
@@ -219,7 +163,7 @@ export default function MiniPlayer(): ReactElement | null {
         className="
           flex
           items-center
-          gap-4
+          gap-3
         "
       >
         <button
@@ -228,8 +172,6 @@ export default function MiniPlayer(): ReactElement | null {
             aurora-button
             rounded-full
             p-2
-            transition
-            hover:scale-110
           "
         >
           <SkipBack size={20} />
@@ -238,9 +180,6 @@ export default function MiniPlayer(): ReactElement | null {
         <motion.button
           whileTap={{
             scale: 0.9,
-          }}
-          whileHover={{
-            scale: 1.08,
           }}
           onClick={playing ? pause : resume}
           className="
@@ -270,11 +209,21 @@ export default function MiniPlayer(): ReactElement | null {
             aurora-button
             rounded-full
             p-2
-            transition
-            hover:scale-110
           "
         >
           <SkipForward size={20} />
+        </button>
+
+        <button
+          onClick={stop}
+          className="
+            aurora-button
+            rounded-full
+            p-2
+          "
+          title="Stop playback"
+        >
+          <Square size={18} fill="currentColor" />
         </button>
       </div>
 

@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useAuthStore } from "./stores/auth";
 import { useNavigationStore } from "./stores/navigation";
 import { useSearchStore } from "./stores/search";
+import { usePlayerStore } from "./stores/player";
 
 import Login from "./pages/Login";
 import Home from "./pages/Home";
@@ -28,16 +29,17 @@ import { useDiscordRPC } from "./hooks/useDiscordRPC";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useMediaKeys } from "./hooks/useMediaKeys";
 import { useTheme } from "./hooks/useTheme";
+import { useUpdater } from "./hooks/useUpdater";
 
 import { MINI_PLAYER_HEIGHT } from "./constants/layout";
-
-import { useUpdater } from "./hooks/useUpdater";
 
 export default function App() {
   const login = useAuthStore((s) => s.login);
   const authenticated = useAuthStore((s) => s.authenticated);
 
   const page = useNavigationStore((s) => s.page);
+
+  const currentSong = usePlayerStore((s) => s.current);
 
   const [checkingAuth, setCheckingAuth] = useState(true);
 
@@ -172,9 +174,6 @@ export default function App() {
               min-h-0
               flex-1
             "
-            style={{
-              paddingBottom: MINI_PLAYER_HEIGHT,
-            }}
           >
             <Sidebar />
 
@@ -184,6 +183,9 @@ export default function App() {
                 flex-1
                 overflow-y-auto
               "
+              style={{
+                paddingBottom: currentSong ? MINI_PLAYER_HEIGHT : 0,
+              }}
             >
               <AnimatePresence mode="wait">
                 <motion.div
@@ -215,7 +217,7 @@ export default function App() {
 
           <AudioEngine />
 
-          <MiniPlayer />
+          <AnimatePresence>{currentSong && <MiniPlayer />}</AnimatePresence>
 
           <FullPlayer />
 

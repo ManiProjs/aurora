@@ -6,7 +6,7 @@
 
 Built with Electron, React, TypeScript, Tailwind CSS, and Framer Motion.
 
-> ⚠️ Aurora is currently in **alpha**. Expect bugs, missing features, and breaking changes between releases.
+> ⚠️ Aurora is currently in **beta**. Expect bugs, missing features, and breaking changes between releases.
 
 [Features](#features) •
 [Screenshots](#screenshots) •
@@ -126,14 +126,8 @@ npm run make
 
 ### Upcoming
 
-- Settings
-- Discord Rich Presence
 - Playlist management
-- Keyboard shortcuts
 - Theme customization
-- Better search
-- Windows support
-- Linux support
 
 ---
 

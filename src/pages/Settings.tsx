@@ -141,7 +141,7 @@ export default function Settings() {
           >
             <p className="font-semibold">Aurora</p>
 
-            <p className="text-sm aurora-text-muted">Version 0.1.-alpha2</p>
+            <p className="text-sm aurora-text-muted">Version 0.3.1-beta</p>
           </div>
         </section>
       </div>
