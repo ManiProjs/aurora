@@ -1,7 +1,7 @@
 {
   "name": "aurora",
   "productName": "aurora",
-  "version": "0.5.0-beta",
+  "version": "0.5.1-beta",
   "description": "A beautiful animation-heavy Navidrome client",
   "main": ".vite/build/main.js",
   "private": true,
