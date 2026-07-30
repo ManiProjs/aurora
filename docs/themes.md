@@ -2,7 +2,7 @@
 
 Aurora supports custom themes that allow users to personalize the application without modifying Aurora's source code.
 
-Themes are simple CSS files with metadata. Users can create, install, and share themes with the Aurora community.
+Themes are lightweight CSS files with Aurora metadata. Users can create, install, import, export, and share themes with the Aurora community.
 
 ---
 
@@ -34,8 +34,8 @@ Example:
 
 ```
 themes/
-├── catppuccin.css
 ├── tokyo-night.css
+├── catppuccin.css
 └── nord.css
 ```
 
@@ -51,28 +51,31 @@ Example:
 /*
 @aurora-theme
 {
-  "id": "my-theme",
-  "name": "My Theme",
+  "id": "tokyo-night",
+  "name": "Tokyo Night",
   "author": "Your Name",
   "version": "1.0.0",
-  "description": "A custom Aurora theme.",
-  "variant": "dark"
+  "description": "A Tokyo Night inspired theme for Aurora.",
+  "variant": "dark",
+  "preview": "#1a1b26"
 }
 */
 
 :root {
-  --aurora-bg: #11111b;
-  --aurora-surface: #181825;
-  --aurora-surface-muted: #313244;
+  --aurora-bg: #1a1b26;
+  --aurora-surface: #16161e;
+  --aurora-surface-muted: #24283b;
 
-  --aurora-text: #cdd6f4;
-  --aurora-text-muted: #a6adc8;
+  --aurora-text: #c0caf5;
+  --aurora-text-muted: #a9b1d6;
 
   --aurora-border: rgba(255,255,255,0.1);
+
+  --aurora-hover: rgba(255,255,255,0.08);
 }
 ```
 
-The metadata block tells Aurora how to display the theme.
+The metadata block allows Aurora to display information about the theme inside Settings.
 
 ---
 
@@ -82,14 +85,14 @@ Every theme should include an `@aurora-theme` metadata block.
 
 ## Required fields
 
-### `id`
+## `id`
 
 Unique identifier for the theme.
 
 Example:
 
 ```json
-"id": "catppuccin-macchiato"
+"id": "tokyo-night"
 ```
 
 Rules:
@@ -97,36 +100,37 @@ Rules:
 - Must be unique
 - Use lowercase letters
 - Use hyphens instead of spaces
+- Avoid special characters
 
 ---
 
-### `name`
+## `name`
 
 The display name shown in Aurora.
 
 Example:
 
 ```json
-"name": "Catppuccin Macchiato"
+"name": "Tokyo Night"
 ```
 
 ---
 
-## Optional fields
+# Optional Fields
 
-### `author`
+## `author`
 
 Theme creator.
 
 Example:
 
 ```json
-"author": "Catppuccin Community"
+"author": "Aurora Community"
 ```
 
 ---
 
-### `version`
+## `version`
 
 Theme version.
 
@@ -136,23 +140,25 @@ Example:
 "version": "1.0.0"
 ```
 
+Useful when sharing updated themes.
+
 ---
 
-### `description`
+## `description`
 
-Short explanation of the theme.
+Short explanation shown in the theme card.
 
 Example:
 
 ```json
-"description": "A soothing dark theme inspired by Catppuccin."
+"description": "A dark blue theme inspired by Tokyo Night."
 ```
 
 ---
 
-### `variant`
+## `variant`
 
-Theme type.
+Defines the theme style.
 
 Supported values:
 
@@ -160,7 +166,7 @@ Supported values:
 "dark"
 ```
 
-or
+or:
 
 ```json
 "light"
@@ -171,6 +177,71 @@ Example:
 ```json
 "variant": "dark"
 ```
+
+---
+
+## `preview`
+
+Theme preview color displayed in Aurora Settings.
+
+Example:
+
+```json
+"preview": "#1a1b26"
+```
+
+---
+
+# Installing Themes
+
+Themes can be installed manually.
+
+1. Download a theme `.css` file.
+2. Copy it into the Aurora themes folder.
+3. Restart Aurora.
+4. Open:
+
+```
+Settings → Appearance → Themes
+```
+
+5. Select the theme.
+
+Aurora automatically discovers valid theme files.
+
+---
+
+# Importing Themes
+
+Aurora also supports theme importing.
+
+From:
+
+```
+Settings → Appearance → Themes
+```
+
+Use:
+
+```
+Import Theme
+```
+
+Aurora will add the theme to your installed themes.
+
+---
+
+# Exporting Themes
+
+Custom themes can be exported from Aurora.
+
+Exported themes include:
+
+- Theme CSS
+- Metadata
+- Custom styling
+
+This makes it easy to share themes with other Aurora users.
 
 ---
 
@@ -189,7 +260,7 @@ Main application background.
 Example:
 
 ```css
---aurora-bg: #1e1e2e;
+--aurora-bg: #1a1b26;
 ```
 
 ---
@@ -205,7 +276,7 @@ Cards, panels, and containers.
 Example:
 
 ```css
---aurora-surface: #181825;
+--aurora-surface: #16161e;
 ```
 
 ---
@@ -221,7 +292,7 @@ Secondary backgrounds.
 Example:
 
 ```css
---aurora-surface-muted: #313244;
+--aurora-surface-muted: #24283b;
 ```
 
 ---
@@ -237,7 +308,7 @@ Primary text color.
 Example:
 
 ```css
---aurora-text: #cdd6f4;
+--aurora-text: #c0caf5;
 ```
 
 ---
@@ -253,7 +324,7 @@ Secondary text.
 Example:
 
 ```css
---aurora-text-muted: #a6adc8;
+--aurora-text-muted: #a9b1d6;
 ```
 
 ---
@@ -274,26 +345,42 @@ Example:
 
 ---
 
+## Hover
+
+```css
+--aurora-hover
+```
+
+Used for hover states.
+
+Example:
+
+```css
+--aurora-hover: rgba(255,255,255,0.08);
+```
+
+---
+
 # Custom Component Styling
 
-Themes can also override Aurora components directly.
+Themes can override Aurora components directly.
 
 Example:
 
 ```css
 .aurora-card {
-  border-radius: 12px;
+  border-radius: 20px;
 }
 
 .aurora-button-primary {
-  background: #89b4fa;
+  background: #7aa2f7;
 }
 ```
 
 Common classes:
 
 | Class | Description |
-|---|---|
+|-|-|
 | `.aurora-card` | Cards and containers |
 | `.aurora-glass` | Glass panels |
 | `.aurora-button` | Secondary buttons |
@@ -306,36 +393,17 @@ Common classes:
 
 # Testing a Theme
 
-1. Put your CSS file into the Aurora themes folder.
+1. Place your theme CSS file into Aurora's themes folder.
 2. Restart Aurora.
 3. Open:
 
 ```
-Settings → Appearance → Theme
+Settings → Appearance → Themes
 ```
 
-4. Select your theme.
+4. Apply your theme.
 
-Changes are applied immediately.
-
----
-
-# Sharing Themes
-
-To share a theme:
-
-1. Create a `.css` file.
-2. Add Aurora metadata.
-3. Test it in Aurora.
-4. Share the file.
-
-Example:
-
-```
-aurora-tokyo-night.css
-```
-
-Users only need to place the file into their themes folder.
+The theme will be active immediately.
 
 ---
 
@@ -349,7 +417,7 @@ Prefer:
 background: var(--aurora-surface);
 ```
 
-over:
+instead of:
 
 ```css
 background: #181825;
@@ -359,7 +427,7 @@ This keeps themes compatible with future Aurora updates.
 
 ---
 
-## Avoid modifying global elements unnecessarily
+## Avoid global overrides
 
 Avoid:
 
@@ -369,7 +437,7 @@ Avoid:
 }
 ```
 
-Prefer targeted selectors:
+Prefer:
 
 ```css
 .aurora-button {
@@ -387,22 +455,21 @@ Do not include:
 
 - JavaScript
 - HTML
-- external imports
-- tracking code
+- External imports
+- Tracking code
 
 ---
 
-# Built-in Theme Examples
+# Built-in Themes
 
-Aurora includes themes inspired by popular desktop environments:
+Aurora includes several built-in themes:
 
 - Aurora
 - Light Aurora
+- Dark
 - AMOLED
-- Tokyo Night
-- Catppuccin
 
-Community themes can extend this collection.
+Future releases may add more official themes.
 
 ---
 
@@ -410,12 +477,12 @@ Community themes can extend this collection.
 
 Planned improvements:
 
-- Theme marketplace
-- Theme preview images
+- More theme variables
+- Better theme previews
+- Community theme sharing
+- Improved import/export workflow
 - Automatic theme updates
-- Theme import/export
-- More customization variables
-- Plugin-style extensions
+- More customization options
 
 ---
 
