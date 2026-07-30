@@ -105,12 +105,12 @@ export default function MiniPlayer(): ReactElement | null {
 
       <div
         className="
-          flex
-          min-w-0
-          flex-1
-          items-center
-          gap-4
-        "
+    flex
+    w-80
+    shrink-0
+    items-center
+    gap-4
+  "
       >
         <motion.div
           animate={{
@@ -127,27 +127,29 @@ export default function MiniPlayer(): ReactElement | null {
             <img
               src={album.coverArt}
               alt={album.name}
-
               className="
-                h-16
-                w-16
-                rounded-2xl
-                object-cover
-                shadow-xl
-              "
+      aspect-square
+      h-16
+      w-16
+      shrink-0
+      rounded-2xl
+      object-cover
+      shadow-xl
+    "
             />
           ) : (
             <div
               className="
-                flex
-                h-16
-                w-16
-                items-center
-                justify-center
-
-                rounded-2xl
-                aurora-surface-muted
-              "
+      flex
+      aspect-square
+      h-16
+      w-16
+      shrink-0
+      items-center
+      justify-center
+      rounded-2xl
+      aurora-surface-muted
+    "
             >
               <Music2 size={24} />
             </div>

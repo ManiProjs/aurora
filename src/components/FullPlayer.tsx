@@ -156,29 +156,40 @@ export default function FullPlayer() {
 
         {album?.coverArt && (
           <motion.img
+            key={album.coverArt}
             src={album.coverArt}
             alt=""
-            animate={{
-              scale: [1, 1.15, 1],
-              rotate: [0, 2, -2, 0],
-              x: [0, 20, -20, 0],
-              y: [0, -20, 20, 0],
-            }}
+
+            animate={
+              playing
+                ? {
+                    scale: [1, 1.05, 1],
+                  }
+                : {
+                    scale: 1,
+                  }
+            }
+
             transition={{
-              duration: 18,
-              repeat: Infinity,
+              duration: 12,
+              repeat: playing ? Infinity : 0,
               ease: "easeInOut",
             }}
+
             className="
-              absolute
-              inset-[-10%]
-              h-[120%]
-              w-[120%]
-              object-cover
-              blur-3xl
-              saturate-150
-              opacity-60
-            "
+      absolute
+      inset-[-15%]
+
+      h-[130%]
+      w-[130%]
+
+      object-cover
+
+      blur-3xl
+      saturate-150
+
+      opacity-50
+    "
           />
         )}
 
@@ -243,13 +254,21 @@ export default function FullPlayer() {
           >
             <div className="relative">
               <motion.div
-                animate={{
-                  scale: [1, 1.08, 1],
-                  opacity: [0.4, 0.8, 0.4],
-                }}
+                animate={
+                  playing
+                    ? {
+                        scale: [1, 1.08, 1],
+                        opacity: [0.35, 0.7, 0.35],
+                      }
+                    : {
+                        scale: 1,
+                        opacity: 0.35,
+                      }
+                }
+
                 transition={{
                   duration: 6,
-                  repeat: Infinity,
+                  repeat: playing ? Infinity : 0,
                 }}
                 className="
                   absolute
@@ -266,13 +285,21 @@ export default function FullPlayer() {
                   src={album.coverArt}
                   alt={album.name}
                   className="
-                    relative
-                    h-72
-                    w-72
-                    rounded-3xl
-                    object-cover
-                    shadow-2xl
-                  "
+  relative
+
+  h-80
+  w-80
+
+  rounded-[2rem]
+
+  object-cover
+
+  shadow-2xl
+
+  transition-transform
+
+  hover:scale-[1.02]
+"
                 />
               ) : (
                 <div
@@ -358,7 +385,7 @@ export default function FullPlayer() {
                   aurora-button
                   rounded-full
                   p-3
-                  ${shuffle ? "text-white" : "text-zinc-400"}
+                  ${shuffle ? "bg-white/20 text-white" : "text-zinc-400"}
                 `}
               >
                 <Shuffle />
@@ -412,11 +439,13 @@ export default function FullPlayer() {
 
               <button
                 onClick={toggleRepeat}
-                className="
-                  aurora-button
-                  rounded-full
-                  p-3
-                "
+                className={`
+    aurora-button
+    rounded-full
+    p-3
+
+    ${repeat ? "bg-white/20 text-white" : "text-zinc-400"}
+  `}
               >
                 <Repeat />
               </button>
