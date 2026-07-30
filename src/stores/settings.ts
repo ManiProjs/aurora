@@ -8,11 +8,23 @@ interface SettingsState {
 
   animations: boolean;
 
+  reduceAnimations: boolean;
+
+  compactMode: boolean;
+
   resumePlayback: boolean;
 
   autoplay: boolean;
 
+  defaultVolume: number;
+
+  crossfade: boolean;
+
   autoScrollLyrics: boolean;
+
+  lyricsFontSize: number;
+
+  lyricsOffset: number;
 
   theme: Theme;
 
@@ -22,11 +34,23 @@ interface SettingsState {
 
   setAnimations(value: boolean): void;
 
+  setReduceAnimations(value: boolean): void;
+
+  setCompactMode(value: boolean): void;
+
   setResumePlayback(value: boolean): void;
 
   setAutoplay(value: boolean): void;
 
+  setDefaultVolume(value: number): void;
+
+  setCrossfade(value: boolean): void;
+
   setAutoScrollLyrics(value: boolean): void;
+
+  setLyricsFontSize(value: number): void;
+
+  setLyricsOffset(value: number): void;
 
   setTheme(value: Theme): void;
 
@@ -40,11 +64,23 @@ export const useSettingsStore = create<SettingsState>()(
 
       animations: true,
 
+      reduceAnimations: false,
+
+      compactMode: false,
+
       resumePlayback: true,
 
       autoplay: true,
 
+      defaultVolume: 0.8,
+
+      crossfade: false,
+
       autoScrollLyrics: true,
+
+      lyricsFontSize: 18,
+
+      lyricsOffset: 0,
 
       theme: "aurora",
 
@@ -62,6 +98,18 @@ export const useSettingsStore = create<SettingsState>()(
         });
       },
 
+      setReduceAnimations(value) {
+        set({
+          reduceAnimations: value,
+        });
+      },
+
+      setCompactMode(value) {
+        set({
+          compactMode: value,
+        });
+      },
+
       setResumePlayback(value) {
         set({
           resumePlayback: value,
@@ -74,9 +122,33 @@ export const useSettingsStore = create<SettingsState>()(
         });
       },
 
+      setDefaultVolume(value) {
+        set({
+          defaultVolume: value,
+        });
+      },
+
+      setCrossfade(value) {
+        set({
+          crossfade: value,
+        });
+      },
+
       setAutoScrollLyrics(value) {
         set({
           autoScrollLyrics: value,
+        });
+      },
+
+      setLyricsFontSize(value) {
+        set({
+          lyricsFontSize: value,
+        });
+      },
+
+      setLyricsOffset(value) {
+        set({
+          lyricsOffset: value,
         });
       },
 

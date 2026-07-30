@@ -6,6 +6,11 @@ import {
   Music2,
   Volume2,
   Square,
+  Heart,
+  ListMusic,
+  Mic2,
+  Shuffle,
+  Repeat,
 } from "lucide-react";
 
 import { motion } from "framer-motion";
@@ -14,6 +19,7 @@ import type { MouseEvent, ReactElement } from "react";
 import Slider from "./Slider";
 
 import { usePlayerStore } from "../stores/player";
+import { useSettingsStore } from "../stores/settings";
 
 function formatTime(seconds: number) {
   const mins = Math.floor(seconds / 60);
@@ -45,6 +51,8 @@ export default function MiniPlayer(): ReactElement | null {
 
   const openFullPlayer = usePlayerStore((s) => s.openFullPlayer);
 
+  const compactMode = useSettingsStore((s) => s.compactMode);
+
   if (!song) {
     return null;
   }
@@ -58,30 +66,22 @@ export default function MiniPlayer(): ReactElement | null {
       initial={{
         y: 120,
         opacity: 0,
-        scale: 0.96,
       }}
-
       animate={{
         y: 0,
         opacity: 1,
-        scale: 1,
       }}
-
       exit={{
         y: 120,
         opacity: 0,
-        scale: 0.96,
       }}
-
       transition={{
         type: "spring",
         stiffness: 260,
         damping: 28,
       }}
-
       onClick={openFullPlayer}
-
-      className="
+      className={`
         fixed
         bottom-4
         left-4
@@ -89,72 +89,55 @@ export default function MiniPlayer(): ReactElement | null {
         z-40
 
         flex
-        min-h-24
         items-center
-        gap-5
 
         rounded-3xl
         aurora-glass
 
-        p-4
+        transition-all
 
-        shadow-2xl
-      "
+        ${compactMode ? "h-16 gap-3 p-3" : "h-24 gap-5 p-4"}
+      `}
     >
       {/* Artwork */}
 
       <div
-        className="
-    flex
-    w-80
-    shrink-0
-    items-center
-    gap-4
-  "
+        className={`
+          flex
+          shrink-0
+          items-center
+          gap-3
+
+          ${compactMode ? "w-56" : "w-80"}
+        `}
       >
-        <motion.div
-          animate={{
-            scale: playing ? [1, 1.03, 1] : 1,
-          }}
+        {album?.coverArt ? (
+          <img
+            src={album.coverArt}
+            alt={album.name}
+            className={`
+              rounded-2xl
+              object-cover
+              shadow-xl
 
-          transition={{
-            repeat: playing ? Infinity : 0,
+              ${compactMode ? "h-10 w-10" : "h-16 w-16"}
+            `}
+          />
+        ) : (
+          <div
+            className={`
+              flex
+              items-center
+              justify-center
+              rounded-2xl
+              aurora-surface-muted
 
-            duration: 2,
-          }}
-        >
-          {album?.coverArt ? (
-            <img
-              src={album.coverArt}
-              alt={album.name}
-              className="
-      aspect-square
-      h-16
-      w-16
-      shrink-0
-      rounded-2xl
-      object-cover
-      shadow-xl
-    "
-            />
-          ) : (
-            <div
-              className="
-      flex
-      aspect-square
-      h-16
-      w-16
-      shrink-0
-      items-center
-      justify-center
-      rounded-2xl
-      aurora-surface-muted
-    "
-            >
-              <Music2 size={24} />
-            </div>
-          )}
-        </motion.div>
+              ${compactMode ? "h-10 w-10" : "h-16 w-16"}
+            `}
+          >
+            <Music2 size={compactMode ? 18 : 24} />
+          </div>
+        )}
 
         <div className="min-w-0">
           <p
@@ -178,38 +161,6 @@ export default function MiniPlayer(): ReactElement | null {
 
             {song.album && ` • ${song.album}`}
           </p>
-
-          {playing && (
-            <div
-              className="
-                mt-1
-                flex
-                gap-1
-              "
-            >
-              {[1, 2, 3].map((i) => (
-                <motion.span
-                  key={i}
-
-                  animate={{
-                    height: [4, 12, 4],
-                  }}
-
-                  transition={{
-                    repeat: Infinity,
-                    duration: 0.8,
-                    delay: i * 0.15,
-                  }}
-
-                  className="
-                    w-1
-                    rounded-full
-                    bg-[var(--aurora-text)]
-                  "
-                />
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
@@ -217,13 +168,25 @@ export default function MiniPlayer(): ReactElement | null {
 
       <div
         onClick={stopPropagation}
-
         className="
           flex
           items-center
           gap-2
         "
       >
+        {!compactMode && (
+          <button
+            className="
+              aurora-button
+              rounded-full
+              p-2
+            "
+            title="Shuffle"
+          >
+            <Shuffle size={18} />
+          </button>
+        )}
+
         <button
           onClick={previous}
           className="
@@ -232,100 +195,137 @@ export default function MiniPlayer(): ReactElement | null {
             p-2
           "
         >
-          <SkipBack size={20} />
+          <SkipBack size={compactMode ? 18 : 20} />
         </button>
 
         <motion.button
           whileTap={{
             scale: 0.9,
           }}
-
           onClick={playing ? pause : resume}
-
-          className="
+          className={`
             flex
-            h-12
-            w-12
-
             items-center
             justify-center
-
             rounded-full
-
             bg-[var(--aurora-text)]
             text-[var(--aurora-bg)]
-
             shadow-lg
-          "
+
+            ${compactMode ? "h-9 w-9" : "h-12 w-12"}
+          `}
         >
           {playing ? (
-            <Pause size={22} fill="currentColor" />
+            <Pause size={compactMode ? 16 : 22} fill="currentColor" />
           ) : (
-            <Play size={22} fill="currentColor" />
+            <Play size={compactMode ? 16 : 22} fill="currentColor" />
           )}
         </motion.button>
 
         <button
           onClick={next}
-
           className="
             aurora-button
             rounded-full
             p-2
           "
         >
-          <SkipForward size={20} />
+          <SkipForward size={compactMode ? 18 : 20} />
         </button>
 
-        <button
-          onClick={stop}
+        {!compactMode && (
+          <button
+            onClick={stop}
+            className="
+              aurora-button
+              rounded-full
+              p-2
+            "
+          >
+            <Square size={18} fill="currentColor" />
+          </button>
+        )}
 
-          className="
-            aurora-button
-            rounded-full
-            p-2
-          "
-        >
-          <Square size={18} fill="currentColor" />
-        </button>
+        {!compactMode && (
+          <button
+            className="
+              aurora-button
+              rounded-full
+              p-2
+            "
+            title="Repeat"
+          >
+            <Repeat size={18} />
+          </button>
+        )}
       </div>
 
       {/* Progress */}
 
       <div
         onClick={stopPropagation}
+        className={`
+    flex
+    flex-1
+    items-center
+    gap-2
 
-        className="
-          flex
-          flex-[2]
-          items-center
-          gap-3
-        "
+    ${compactMode ? "max-w-xs" : ""}
+  `}
       >
-        <span className="w-10 text-xs aurora-text-muted">
-          {formatTime(progress)}
-        </span>
+        {!compactMode && (
+          <span className="w-10 text-xs aurora-text-muted">
+            {formatTime(progress)}
+          </span>
+        )}
 
         <Slider value={progress} min={0} max={duration || 1} onChange={seek} />
 
-        <span className="w-10 text-xs aurora-text-muted">
-          {formatTime(duration)}
-        </span>
+        {!compactMode && (
+          <span className="w-10 text-xs aurora-text-muted">
+            {formatTime(duration)}
+          </span>
+        )}
       </div>
+
+      {/* Extra actions */}
+
+      {!compactMode && (
+        <div
+          onClick={stopPropagation}
+          className="
+            flex
+            items-center
+            gap-2
+          "
+        >
+          <button className="aurora-button rounded-full p-2">
+            <Mic2 size={19} />
+          </button>
+
+          <button className="aurora-button rounded-full p-2">
+            <ListMusic size={19} />
+          </button>
+
+          <button className="aurora-button rounded-full p-2">
+            <Heart size={19} />
+          </button>
+        </div>
+      )}
 
       {/* Volume */}
 
       <div
         onClick={stopPropagation}
+        className={`
+    flex
+    items-center
+    gap-2
 
-        className="
-          flex
-          w-40
-          items-center
-          gap-2
-        "
+    ${compactMode ? "w-24" : "w-40"}
+  `}
       >
-        <Volume2 size={18} />
+        <Volume2 size={compactMode ? 16 : 18} />
 
         <Slider
           value={volume}

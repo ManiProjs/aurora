@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 
 import Toggle from "../components/Toggle";
+import ThemeCard from "../components/ThemeCard";
 
 import { useSettingsStore } from "../stores/settings";
-
 import { useAuthStore } from "../stores/auth";
-
-import ThemeCard from "../components/ThemeCard";
 
 interface ThemeMetadata {
   file?: string;
@@ -31,35 +29,41 @@ export default function Settings() {
     discordRPC,
 
     animations,
+    reduceAnimations,
+    compactMode,
 
     resumePlayback,
-
     autoplay,
+    defaultVolume,
+    crossfade,
+
+    autoScrollLyrics,
+    lyricsFontSize,
+    lyricsOffset,
 
     theme,
-
     customCSS,
 
     setDiscordRPC,
 
     setAnimations,
+    setReduceAnimations,
+    setCompactMode,
 
     setResumePlayback,
-
     setAutoplay,
+    setDefaultVolume,
+    setCrossfade,
+
+    setAutoScrollLyrics,
+    setLyricsFontSize,
+    setLyricsOffset,
 
     setTheme,
-
     setCustomCSS,
   } = useSettingsStore();
 
-  const {
-    server,
-
-    username,
-
-    logout,
-  } = useAuthStore();
+  const { server, username, logout } = useAuthStore();
 
   const builtInThemes: ThemeMetadata[] = [
     {
@@ -104,17 +108,9 @@ export default function Settings() {
   }, []);
 
   async function loadThemes() {
-    const themes = await window.themes.list();
+    const result = await window.themes.list();
 
-    setExternalThemes(themes);
-  }
-
-  async function importTheme() {
-    const imported = await window.themes.import();
-
-    if (imported) {
-      await loadThemes();
-    }
+    setExternalThemes(result);
   }
 
   return (
@@ -128,6 +124,8 @@ export default function Settings() {
     >
       <div className="mx-auto max-w-3xl">
         <h1 className="text-4xl font-bold">Settings</h1>
+
+        {/* Appearance */}
 
         <section className="mt-10">
           <h2 className="text-xl font-semibold">Appearance</h2>
@@ -148,72 +146,82 @@ export default function Settings() {
               <Toggle value={animations} onChange={setAnimations} />
             </SettingRow>
 
+            <SettingRow
+              title="Reduce animations"
+              description="Disable heavy animations"
+            >
+              <Toggle value={reduceAnimations} onChange={setReduceAnimations} />
+            </SettingRow>
+
+            <SettingRow
+              title="Compact mode"
+              description="Use smaller interface spacing"
+            >
+              <Toggle value={compactMode} onChange={setCompactMode} />
+            </SettingRow>
+
             <div>
-              <div>
-                <p className="font-medium">Themes</p>
+              <p className="font-medium">Themes</p>
 
-                <div
+              <div
+                className="
+                  mt-4
+                  flex
+                  gap-3
+                "
+              >
+                <button
+                  onClick={() => window.themes.openFolder()}
                   className="
-    mt-4
-    flex
-    gap-3
-  "
+                    rounded-xl
+                    aurora-button-primary
+                  "
                 >
-                  <button
-                    onClick={async () => {
-                      await window.themes.openFolder();
-                    }}
-                    className="
-      rounded-xl
-      aurora-button-primary
-    "
-                  >
-                    Open Themes Folder
-                  </button>
+                  Open Themes Folder
+                </button>
 
-                  <button
-                    onClick={async () => {
-                      const imported = await window.themes.import();
+                <button
+                  onClick={async () => {
+                    const imported = await window.themes.import();
 
-                      if (imported) {
-                        const themes = await window.themes.list();
-
-                        setExternalThemes(themes);
-                      }
-                    }}
-                    className="
-      rounded-xl
-      aurora-button
-    "
-                  >
-                    Import Theme
-                  </button>
-                </div>
-
-                <div
+                    if (imported) {
+                      loadThemes();
+                    }
+                  }}
                   className="
-      mt-4
-      grid
-      gap-5
-      sm:grid-cols-2
-    "
+                    rounded-xl
+                    aurora-button
+                  "
                 >
-                  {themes.map((item) => (
-                    <ThemeCard
-                      key={item.id}
-                      theme={item}
-                      active={theme === item.id}
-                      onApply={() => {
-                        setTheme(item.id);
-                      }}
-                      onExport={
-                        item.file
-                          ? () => window.themes.export(item.file!)
-                          : undefined
-                      }
-                    />
-                  ))}
-                </div>
+                  Import Theme
+                </button>
+              </div>
+
+              <div
+                className="
+                  mt-4
+                  grid
+                  gap-5
+                  sm:grid-cols-2
+                "
+              >
+                {themes.map((item) => (
+                  <ThemeCard
+                    key={item.id}
+
+                    theme={item}
+
+                    active={theme === item.id}
+
+                    onApply={() => setTheme(item.id)}
+
+                    onExport={
+                      item.file
+                        ? () => window.themes.export(item.file!)
+                        : undefined
+                    }
+                  />
+                ))}
               </div>
             </div>
 
@@ -242,8 +250,10 @@ export default function Settings() {
           </div>
         </section>
 
+        {/* Player */}
+
         <section className="mt-10">
-          <h2 className="text-xl font-semibold">Playback</h2>
+          <h2 className="text-xl font-semibold">Player</h2>
 
           <div
             className="
@@ -267,8 +277,93 @@ export default function Settings() {
             >
               <Toggle value={autoplay} onChange={setAutoplay} />
             </SettingRow>
+
+            <SettingRow
+              title="Crossfade"
+              description="Smooth transitions between songs"
+            >
+              <Toggle value={crossfade} onChange={setCrossfade} />
+            </SettingRow>
+
+            <div>
+              <p className="font-medium">Default volume</p>
+
+              <input
+                type="range"
+
+                min="0"
+
+                max="1"
+
+                step="0.01"
+
+                value={defaultVolume}
+
+                onChange={(e) => setDefaultVolume(Number(e.target.value))}
+
+                className="mt-3 w-full"
+              />
+            </div>
           </div>
         </section>
+
+        {/* Lyrics */}
+
+        <section className="mt-10">
+          <h2 className="text-xl font-semibold">Lyrics</h2>
+
+          <div
+            className="
+              mt-4
+              rounded-3xl
+              aurora-glass
+              p-6
+              space-y-5
+            "
+          >
+            <SettingRow
+              title="Auto-scroll lyrics"
+              description="Follow the current song position"
+            >
+              <Toggle value={autoScrollLyrics} onChange={setAutoScrollLyrics} />
+            </SettingRow>
+
+            <div>
+              <p className="font-medium">Font size</p>
+
+              <input
+                type="range"
+                min="12"
+                max="32"
+                value={lyricsFontSize}
+
+                onChange={(e) => setLyricsFontSize(Number(e.target.value))}
+
+                className="mt-3 w-full"
+              />
+            </div>
+
+            <div>
+              <p className="font-medium">Sync offset</p>
+
+              <input
+                type="number"
+
+                value={lyricsOffset}
+
+                onChange={(e) => setLyricsOffset(Number(e.target.value))}
+
+                className="
+                  mt-3
+                  aurora-input
+                  w-full
+                "
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Integrations */}
 
         <section className="mt-10">
           <h2 className="text-xl font-semibold">Integrations</h2>
@@ -290,8 +385,10 @@ export default function Settings() {
           </div>
         </section>
 
+        {/* Account */}
+
         <section className="mt-10">
-          <h2 className="text-xl font-semibold">Accounts</h2>
+          <h2 className="text-xl font-semibold">Account</h2>
 
           <div
             className="
@@ -307,6 +404,7 @@ export default function Settings() {
 
             <button
               onClick={logout}
+
               className="
                 mt-4
                 rounded-xl
