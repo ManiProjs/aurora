@@ -2,6 +2,8 @@ import { useEffect } from "react";
 
 import { usePlayerStore } from "../stores/player";
 
+import { isTypingTarget } from "../utils/isTypingTarget";
+
 export function useMediaKeys() {
   const toggle = usePlayerStore((s) => s.toggle);
   const next = usePlayerStore((s) => s.next);
@@ -16,7 +18,7 @@ export function useMediaKeys() {
         return;
       }
 
-      if (e.code === "Space") {
+      if (e.code === "Space" && !isTypingTarget(e.target)) {
         e.preventDefault();
         toggle();
       }

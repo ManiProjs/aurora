@@ -35,6 +35,10 @@ import { useThemes } from "./hooks/useThemes";
 
 import { MINI_PLAYER_HEIGHT } from "./constants/layout";
 
+import { HIDDEN_THEMES } from "./utils/secrets";
+import { useSettingsStore } from "./stores/settings";
+import { isTypingTarget } from "./utils/isTypingTarget";
+
 export default function App() {
   const login = useAuthStore((s) => s.login);
   const authenticated = useAuthStore((s) => s.authenticated);
@@ -108,6 +112,9 @@ export default function App() {
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
+      if (isTypingTarget(e.target)) {
+        return;
+      }
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
 
@@ -121,6 +128,30 @@ export default function App() {
       window.removeEventListener("keydown", handleKey);
     };
   }, []);
+
+  const theme = useSettingsStore((s) => s.theme);
+
+  useEffect(() => {
+    const hidden = HIDDEN_THEMES.find((t) => t.id === theme);
+
+    let style = document.getElementById("aurora-hidden-theme");
+
+    if (!style) {
+      style = document.createElement("style");
+
+      style.id = "aurora-hidden-theme";
+
+      document.head.appendChild(style);
+    }
+
+    if (hidden) {
+      style.textContent = hidden.css;
+    } else {
+      style.textContent = "";
+    }
+
+    document.documentElement.className = `theme-${theme}`;
+  }, [theme]);
 
   return (
     <AnimatePresence mode="wait">

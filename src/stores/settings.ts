@@ -1,60 +1,41 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type Theme = "aurora" | "light-aurora" | "dark" | "amoled" | string;
+export type Theme =
+  "aurora" | "light-aurora" | "dark" | "amoled" | "mario" | string;
 
 interface SettingsState {
   discordRPC: boolean;
 
   animations: boolean;
 
-  reduceAnimations: boolean;
-
-  compactMode: boolean;
-
   resumePlayback: boolean;
 
   autoplay: boolean;
 
-  defaultVolume: number;
-
-  crossfade: boolean;
-
   autoScrollLyrics: boolean;
-
-  lyricsFontSize: number;
-
-  lyricsOffset: number;
 
   theme: Theme;
 
   customCSS: string;
 
+  hiddenThemes: string[];
+
   setDiscordRPC(value: boolean): void;
 
   setAnimations(value: boolean): void;
-
-  setReduceAnimations(value: boolean): void;
-
-  setCompactMode(value: boolean): void;
 
   setResumePlayback(value: boolean): void;
 
   setAutoplay(value: boolean): void;
 
-  setDefaultVolume(value: number): void;
-
-  setCrossfade(value: boolean): void;
-
   setAutoScrollLyrics(value: boolean): void;
-
-  setLyricsFontSize(value: number): void;
-
-  setLyricsOffset(value: number): void;
 
   setTheme(value: Theme): void;
 
   setCustomCSS(value: string): void;
+
+  unlockHiddenTheme(id: string): void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -64,27 +45,17 @@ export const useSettingsStore = create<SettingsState>()(
 
       animations: true,
 
-      reduceAnimations: false,
-
-      compactMode: false,
-
       resumePlayback: true,
 
       autoplay: true,
 
-      defaultVolume: 0.8,
-
-      crossfade: false,
-
       autoScrollLyrics: true,
-
-      lyricsFontSize: 18,
-
-      lyricsOffset: 0,
 
       theme: "aurora",
 
       customCSS: "",
+
+      hiddenThemes: [],
 
       setDiscordRPC(value) {
         set({
@@ -95,18 +66,6 @@ export const useSettingsStore = create<SettingsState>()(
       setAnimations(value) {
         set({
           animations: value,
-        });
-      },
-
-      setReduceAnimations(value) {
-        set({
-          reduceAnimations: value,
-        });
-      },
-
-      setCompactMode(value) {
-        set({
-          compactMode: value,
         });
       },
 
@@ -122,33 +81,9 @@ export const useSettingsStore = create<SettingsState>()(
         });
       },
 
-      setDefaultVolume(value) {
-        set({
-          defaultVolume: value,
-        });
-      },
-
-      setCrossfade(value) {
-        set({
-          crossfade: value,
-        });
-      },
-
       setAutoScrollLyrics(value) {
         set({
           autoScrollLyrics: value,
-        });
-      },
-
-      setLyricsFontSize(value) {
-        set({
-          lyricsFontSize: value,
-        });
-      },
-
-      setLyricsOffset(value) {
-        set({
-          lyricsOffset: value,
         });
       },
 
@@ -162,6 +97,14 @@ export const useSettingsStore = create<SettingsState>()(
         set({
           customCSS: value,
         });
+      },
+
+      unlockHiddenTheme(id) {
+        set((state) => ({
+          hiddenThemes: state.hiddenThemes.includes(id)
+            ? state.hiddenThemes
+            : [...state.hiddenThemes, id],
+        }));
       },
     }),
 

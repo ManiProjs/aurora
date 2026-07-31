@@ -13,6 +13,8 @@ import {
 
 import { AnimatePresence, motion } from "framer-motion";
 
+import { isTypingTarget } from "../utils/isTypingTarget";
+
 import Slider from "./Slider";
 import Queue from "./Queue";
 import LyricsPanel from "./LyricsPanel";
@@ -116,6 +118,21 @@ export default function FullPlayer() {
 
   useEffect(() => {
     function handleKeyboard(event: KeyboardEvent) {
+      if (
+        event.target instanceof HTMLElement &&
+        event.target.closest(".cm-editor")
+      ) {
+        return;
+      }
+
+      if (!fullPlayer) {
+        return;
+      }
+
+      if (isTypingTarget(event.target)) {
+        return;
+      }
+
       if (!fullPlayer) {
         return;
       }

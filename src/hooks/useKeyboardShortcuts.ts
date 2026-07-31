@@ -2,6 +2,8 @@ import { useEffect } from "react";
 
 import { usePlayerStore } from "../stores/player";
 
+import { isTypingTarget } from "../utils/isTypingTarget";
+
 export function useKeyboardShortcuts() {
   const togglePlay = usePlayerStore((s) => s.toggle);
 
@@ -11,10 +13,7 @@ export function useKeyboardShortcuts() {
 
   useEffect(() => {
     function handler(event: KeyboardEvent) {
-      // Don't hijack typing
-      const target = event.target as HTMLElement;
-
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") {
+      if (isTypingTarget(event.target)) {
         return;
       }
 
@@ -22,14 +21,6 @@ export function useKeyboardShortcuts() {
         case "Space":
           event.preventDefault();
           togglePlay();
-          break;
-
-        case "ArrowRight":
-          next();
-          break;
-
-        case "ArrowLeft":
-          previous();
           break;
       }
     }
