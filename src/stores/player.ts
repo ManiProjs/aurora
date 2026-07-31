@@ -29,6 +29,10 @@ interface PlayerState {
 
   hasHydrated: boolean;
 
+  artworkColor: string;
+
+  setArtworkColor(color: string): void;
+
   toggleShuffle(): void;
   toggleRepeat(): void;
 
@@ -91,6 +95,14 @@ export const usePlayerStore = create<PlayerState>()(
       stopVersion: 0,
 
       hasHydrated: false,
+
+      artworkColor: "#09090b",
+
+      setArtworkColor(color) {
+        set({
+          artworkColor: color,
+        });
+      },
 
       toggleShuffle() {
         set((state) => ({

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import {
   X,
   Pause,
@@ -20,6 +21,8 @@ import { usePlayerStore } from "../stores/player";
 
 import { getLyrics } from "../api/lyrics";
 import type { LyricLine } from "../api/lyrics";
+
+import { getArtworkColor } from "../utils/colors";
 
 function formatTime(seconds: number) {
   const mins = Math.floor(seconds / 60);
@@ -54,10 +57,34 @@ export default function FullPlayer() {
   const shuffle = usePlayerStore((s) => s.shuffle);
   const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
 
-  const repeat = usePlayerStore((s) => s.repeat);
   const toggleRepeat = usePlayerStore((s) => s.toggleRepeat);
 
   const [lyrics, setLyrics] = useState<LyricLine[]>([]);
+
+  const [artworkColor, setArtworkColor] = useState("#09090b");
+
+  /*
+    Dynamic artwork colors
+  */
+
+  useEffect(() => {
+    if (!album?.coverArt) {
+      setArtworkColor("#09090b");
+      return;
+    }
+
+    getArtworkColor(album.coverArt)
+      .then((result) => {
+        setArtworkColor(result.hex);
+      })
+      .catch(() => {
+        setArtworkColor("#09090b");
+      });
+  }, [album?.coverArt]);
+
+  /*
+    Lyrics loading
+  */
 
   useEffect(() => {
     if (!song) {
@@ -75,14 +102,17 @@ export default function FullPlayer() {
         );
 
         setLyrics(result);
-      } catch (error) {
-        console.error("Failed loading lyrics:", error);
+      } catch {
         setLyrics([]);
       }
     }
 
     loadLyrics();
   }, [song]);
+
+  /*
+    Keyboard shortcuts
+  */
 
   useEffect(() => {
     function handleKeyboard(event: KeyboardEvent) {
@@ -152,44 +182,68 @@ export default function FullPlayer() {
           aurora-text
         "
       >
-        {/* Background artwork */}
+        {/* Dynamic background */}
+
+        <motion.div
+          animate={{
+            backgroundPosition: [
+              "0% 0%",
+              "100% 100%",
+              "0% 100%",
+              "100% 0%",
+              "0% 0%",
+            ],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          style={{
+            background: `
+      radial-gradient(
+        circle at 20% 20%,
+        ${artworkColor},
+        transparent 40%
+      ),
+      radial-gradient(
+        circle at 80% 80%,
+        ${artworkColor},
+        #09090b 70%
+      )
+    `,
+            backgroundSize: "200% 200%",
+          }}
+          className="
+    absolute
+    inset-0
+    opacity-80
+  "
+        />
+
+        {/* Artwork blur */}
 
         {album?.coverArt && (
           <motion.img
-            key={album.coverArt}
             src={album.coverArt}
             alt=""
-
-            animate={
-              playing
-                ? {
-                    scale: [1, 1.05, 1],
-                  }
-                : {
-                    scale: 1,
-                  }
-            }
-
+            animate={{
+              scale: [1, 1.15, 1],
+            }}
             transition={{
-              duration: 12,
-              repeat: playing ? Infinity : 0,
+              duration: 18,
+              repeat: Infinity,
               ease: "easeInOut",
             }}
-
             className="
-      absolute
-      inset-[-15%]
-
-      h-[130%]
-      w-[130%]
-
-      object-cover
-
-      blur-3xl
-      saturate-150
-
-      opacity-50
-    "
+              absolute
+              inset-[-10%]
+              h-[120%]
+              w-[120%]
+              object-cover
+              blur-3xl
+              opacity-40
+            "
           />
         )}
 
@@ -197,7 +251,7 @@ export default function FullPlayer() {
           className="
             absolute
             inset-0
-            bg-zinc-950/80
+            bg-black/60
             backdrop-blur-3xl
           "
         />
@@ -212,7 +266,6 @@ export default function FullPlayer() {
             z-20
             rounded-full
             p-3
-            transition
             hover:scale-110
           "
         >
@@ -228,11 +281,6 @@ export default function FullPlayer() {
           animate={{
             opacity: 1,
             y: 0,
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 160,
-            damping: 20,
           }}
           className="
             relative
@@ -252,82 +300,35 @@ export default function FullPlayer() {
               items-center
             "
           >
-            <div className="relative">
-              <motion.div
-                animate={
-                  playing
-                    ? {
-                        scale: [1, 1.08, 1],
-                        opacity: [0.35, 0.7, 0.35],
-                      }
-                    : {
-                        scale: 1,
-                        opacity: 0.35,
-                      }
-                }
-
-                transition={{
-                  duration: 6,
-                  repeat: playing ? Infinity : 0,
-                }}
+            {album?.coverArt ? (
+              <img
+                src={album.coverArt}
+                alt={album.name}
                 className="
-                  absolute
-                  inset-0
+                  h-72
+                  w-72
                   rounded-3xl
-                  bg-white/20
-                  blur-3xl
+                  object-cover
+                  shadow-2xl
                 "
               />
+            ) : (
+              <div
+                className="
+                  flex
+                  h-72
+                  w-72
+                  items-center
+                  justify-center
+                  rounded-3xl
+                  bg-zinc-800
+                "
+              >
+                <Music2 size={64} />
+              </div>
+            )}
 
-              {album?.coverArt ? (
-                <motion.img
-                  layoutId="player-artwork"
-                  src={album.coverArt}
-                  alt={album.name}
-                  className="
-  relative
-
-  h-80
-  w-80
-
-  rounded-[2rem]
-
-  object-cover
-
-  shadow-2xl
-
-  transition-transform
-
-  hover:scale-[1.02]
-"
-                />
-              ) : (
-                <div
-                  className="
-                    flex
-                    h-72
-                    w-72
-                    items-center
-                    justify-center
-                    rounded-3xl
-                    bg-zinc-800
-                  "
-                >
-                  <Music2 size={64} />
-                </div>
-              )}
-            </div>
-
-            <motion.h1
-              key={song.title}
-              initial={{
-                opacity: 0,
-                y: 10,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
+            <h1
               className="
                 mt-8
                 text-5xl
@@ -335,14 +336,14 @@ export default function FullPlayer() {
               "
             >
               {song.title}
-            </motion.h1>
+            </h1>
 
             <p
               className="
-                mt-3
-                text-xl
-                aurora-text-muted
-              "
+              mt-3
+              text-xl
+              aurora-text-muted
+            "
             >
               {song.artist}
 
@@ -381,12 +382,11 @@ export default function FullPlayer() {
             >
               <button
                 onClick={toggleShuffle}
-                className={`
+                className="
                   aurora-button
                   rounded-full
                   p-3
-                  ${shuffle ? "bg-white/20 text-white" : "text-zinc-400"}
-                `}
+                "
               >
                 <Shuffle />
               </button>
@@ -402,10 +402,7 @@ export default function FullPlayer() {
                 <SkipBack size={32} />
               </button>
 
-              <motion.button
-                whileTap={{
-                  scale: 0.9,
-                }}
+              <button
                 onClick={playing ? pause : resume}
                 className="
                   flex
@@ -416,7 +413,6 @@ export default function FullPlayer() {
                   rounded-full
                   bg-white
                   text-black
-                  shadow-xl
                 "
               >
                 {playing ? (
@@ -424,7 +420,7 @@ export default function FullPlayer() {
                 ) : (
                   <Play size={38} fill="currentColor" />
                 )}
-              </motion.button>
+              </button>
 
               <button
                 onClick={next}
@@ -439,13 +435,11 @@ export default function FullPlayer() {
 
               <button
                 onClick={toggleRepeat}
-                className={`
-    aurora-button
-    rounded-full
-    p-3
-
-    ${repeat ? "bg-white/20 text-white" : "text-zinc-400"}
-  `}
+                className="
+                  aurora-button
+                  rounded-full
+                  p-3
+                "
               >
                 <Repeat />
               </button>
